@@ -51,6 +51,7 @@ extern int preserve_hard_links;
 extern char *filesfrom_host;
 extern struct stats stats;
 extern struct file_list *the_file_list;
+extern int batch_dev_null;
 
 const char phase_unknown[] = "unknown";
 int ignore_timeout = 0;
@@ -1079,7 +1080,7 @@ static void writefd_unbuffered(int fd,char *buf,size_t len)
 			continue;
 		}
 
-		if (FD_ISSET(fd, &e_fds)) {
+		if (FD_ISSET(fd, &e_fds) && !(fd == batch_fd && batch_dev_null)) {
 			rsyserr(FINFO, errno,
 				"select exception on fd %d", fd);
 		}

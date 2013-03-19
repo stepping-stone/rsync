@@ -105,9 +105,9 @@ static void rprint_progress(OFF_T ofs, OFF_T size, struct timeval *now,
 			stats.num_files);
 	} else
 		strlcpy(eol, "\r", sizeof eol);
-	rprintf(FCLIENT, "%12s %3d%% %7.2f%s %4d:%02d:%02d%s",
+	rprintf(FCLIENT, "%12s %3d%% %7.2f%s %4d:%02d:%02d %lli %lli%s",
 		human_num(ofs), pct, rate, units,
-		remain_h, remain_m, remain_s, eol);
+		remain_h, remain_m, remain_s, stats.total_read, stats.total_written, eol);
 }
 
 void end_progress(OFF_T size)

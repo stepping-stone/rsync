@@ -71,6 +71,7 @@ extern char *batch_name;
 extern char curr_dir[MAXPATHLEN];
 extern struct filter_list_struct server_filter_list;
 
+int batch_dev_null = 0;
 int local_server = 0;
 int new_root_dir = 0;
 mode_t orig_umask = 0;
@@ -1347,6 +1348,7 @@ int main(int argc,char *argv[])
 		if (read_batch && strcmp(batch_name, "-") == 0)
 			batch_fd = STDIN_FILENO;
 		else {
+			if (strcmp(batch_name, "/dev/null") == 0) batch_dev_null = 1;
 			batch_fd = do_open(batch_name,
 				   write_batch ? O_WRONLY | O_CREAT | O_TRUNC
 				   : O_RDONLY, S_IRUSR | S_IWUSR);
