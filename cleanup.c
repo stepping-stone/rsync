@@ -30,6 +30,7 @@ extern int keep_partial;
 extern int log_got_error;
 extern char *partial_dir;
 extern char *logfile_name;
+extern char** utf8_argv;
 
 #ifdef HAVE_SIGACTION
 static struct sigaction sigact;
@@ -196,6 +197,8 @@ NORETURN void _exit_cleanup(int code, const char *file, int line)
 	default:
 		break;
 	}
+
+	if (utf8_argv) free(utf8_argv);
 
 	exit(code);
 }

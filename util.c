@@ -124,7 +124,7 @@ NORETURN void overflow_exit(char *str)
 int set_modtime(char *fname, time_t modtime, mode_t mode)
 {
 #if !defined HAVE_LUTIMES || !defined HAVE_UTIMES
-	if (S_ISLNK(mode))
+	if (S_ISLNK(mode) || S_ISDIR(mode))
 		return 1;
 #endif
 

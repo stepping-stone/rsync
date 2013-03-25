@@ -76,6 +76,9 @@ int local_server = 0;
 int new_root_dir = 0;
 mode_t orig_umask = 0;
 struct file_list *the_file_list;
+char** utf8_argv = NULL;
+
+static char* argv0 = NULL;
 
 /* There's probably never more than at most 2 outstanding child processes,
  * but set it higher, just in case. */
@@ -684,12 +687,85 @@ static void do_server_sender(int f_in, int f_out, int argc, char *argv[])
 	exit_cleanup(0);
 }
 
+void receiver(int argc, char* argv[])
+{
+	int f_in;
+	int f_out;
+	struct file_list *flist;
+	char *local_name;
+	int pid;
+	int exit_code = 0;
+	int error_pipe[2];
+	struct var_info_t local_var_info[] = {
+		{ &f_in, 0, sizeof(f_in) },
+		{ &f_out, 0, sizeof(f_out) },
+		{ &flist, 1, sizeof(*flist) },
+		{ &local_name, 1, 0 },
+		{ &pid, 0, sizeof(pid) },
+		{ &exit_code, 0, sizeof(exit_code) },
+		{ &error_pipe, 0, sizeof(error_pipe) },
+		{ NULL, 0, 0 }
+	};
+	HANDLE hMapping = NULL;
+
+	sscanf(argv[2], "%p", &hMapping);
+	restoreVars(hMapping, local_var_info);
+
+	close(error_pipe[0]);
+	if (f_in != f_out)
+		close(f_out);
+
+	/* we can't let two processes write to the socket at one time */
+	close_multiplexing_out();
+
+	/* set place to send errors */
+	set_msg_fd_out(error_pipe[1]);
+
+	recv_files(f_in, flist, local_name);
+	io_flush(FULL_FLUSH);
+	handle_stats(f_in);
+
+	send_msg(MSG_DONE, "", 0);
+	io_flush(FULL_FLUSH);
+
+	/* Handle any keep-alive packets from the post-processing work
+	 * that the generator does. */
+	if (protocol_version >= 29) {
+		kluge_around_eof = -1;
+
+		/* This should only get stopped via a USR2 signal. */
+		while (read_int(f_in) == flist->count
+				&& read_shortint(f_in) == ITEM_IS_NEW) {}
+
+		rprintf(FERROR, "Invalid packet at end of run [%s]\n",
+			who_am_i());
+		exit_cleanup(RERR_PROTOCOL);
+	}
+
+		/* Finally, we go to sleep until our parent kills us with a
+		 * USR2 signal.  We sleep for a short time, as on some OSes
+		 * a signal won't interrupt a sleep! */
+		while (1)
+			msleep(20);
+}
 
 static int do_recv(int f_in,int f_out,struct file_list *flist,char *local_name)
 {
 	int pid;
 	int exit_code = 0;
 	int error_pipe[2];
+	struct var_info_t local_var_info[] = {
+		{ &f_in, 0, sizeof(f_in) },
+		{ &f_out, 0, sizeof(f_out) },
+		{ &flist, 1, sizeof(*flist) },
+		{ &local_name, 1, 0 },
+		{ &pid, 0, sizeof(pid) },
+		{ &exit_code, 0, sizeof(exit_code) },
+		{ &error_pipe, 0, sizeof(error_pipe) },
+		{ NULL, 0, 0 }
+	};
+	HANDLE hMapping;
+	char buf[64];
 
 	/* The receiving side mustn't obey this, or an existing symlink that
 	 * points to an identical file won't be replaced by the referent. */
@@ -705,49 +781,9 @@ static int do_recv(int f_in,int f_out,struct file_list *flist,char *local_name)
 
 	io_flush(NORMAL_FLUSH);
 
-	if ((pid = do_fork()) == -1) {
-		rsyserr(FERROR, errno, "fork failed in do_recv");
-		exit_cleanup(RERR_IPC);
-	}
-
-	if (pid == 0) {
-		close(error_pipe[0]);
-		if (f_in != f_out)
-			close(f_out);
-
-		/* we can't let two processes write to the socket at one time */
-		close_multiplexing_out();
-
-		/* set place to send errors */
-		set_msg_fd_out(error_pipe[1]);
-
-		recv_files(f_in, flist, local_name);
-		io_flush(FULL_FLUSH);
-		handle_stats(f_in);
-
-		send_msg(MSG_DONE, "", 0);
-		io_flush(FULL_FLUSH);
-
-		/* Handle any keep-alive packets from the post-processing work
-		 * that the generator does. */
-		if (protocol_version >= 29) {
-			kluge_around_eof = -1;
-
-			/* This should only get stopped via a USR2 signal. */
-			while (read_int(f_in) == flist->count
-			    && read_shortint(f_in) == ITEM_IS_NEW) {}
-
-			rprintf(FERROR, "Invalid packet at end of run [%s]\n",
-				who_am_i());
-			exit_cleanup(RERR_PROTOCOL);
-		}
-
-		/* Finally, we go to sleep until our parent kills us with a
-		 * USR2 signal.  We sleep for a short time, as on some OSes
-		 * a signal won't interrupt a sleep! */
-		while (1)
-			msleep(20);
-	}
+	hMapping = saveVars(local_var_info);
+	sprintf(buf, "%p", hMapping);
+	pid = _spawnl(_P_NOWAIT, argv0, "rsync", "--receiver", buf, NULL);
 
 	am_generator = 1;
 	close_multiplexing_in();
@@ -773,7 +809,8 @@ static int do_recv(int f_in,int f_out,struct file_list *flist,char *local_name)
 	io_flush(FULL_FLUSH);
 
 	set_msg_fd_in(-1);
-	kill(pid, SIGUSR2);
+	GenerateConsoleCtrlEvent(1, 0);
+
 	wait_process_with_flush(pid, &exit_code);
 	return exit_code;
 }
@@ -1183,7 +1220,7 @@ static RETSIGTYPE sigusr1_handler(UNUSED(int val))
 	exit_cleanup(RERR_SIGNAL1);
 }
 
-static RETSIGTYPE sigusr2_handler(UNUSED(int val))
+RETSIGTYPE sigusr2_handler(UNUSED(int val))
 {
 	if (!am_server)
 		output_summary();
@@ -1279,6 +1316,7 @@ int main(int argc,char *argv[])
 #ifdef HAVE_SIGACTION
 # ifdef HAVE_SIGPROCMASK
 	sigset_t sigmask;
+	HANDLE hMapping;
 
 	sigemptyset(&sigmask);
 # endif
@@ -1293,6 +1331,9 @@ int main(int argc,char *argv[])
 	SIGACTMASK(SIGABRT, rsync_panic_handler);
 	SIGACTMASK(SIGBUS, rsync_panic_handler);
 #endif
+
+	argv0 = argv[0];
+	SetConsoleCtrlHandler(CtrlHandler, TRUE);
 
 	starttime = time(NULL);
 	am_root = (MY_UID() == 0);
@@ -1311,6 +1352,15 @@ int main(int argc,char *argv[])
 #if defined CONFIG_LOCALE && defined HAVE_SETLOCALE
 	setlocale(LC_CTYPE, "");
 #endif
+
+	if (argc == 3 && strcmp(argv[1], "--receiver") == 0)
+	{
+		receiver(argc, argv);
+		exit_cleanup(0);
+	}
+
+	get_utf8_arguments(&argc, &argv);
+	utf8_argv = argv;
 
 	if (!parse_arguments(&argc, (const char ***) &argv, 1)) {
 		/* FIXME: We ought to call the same error-handling

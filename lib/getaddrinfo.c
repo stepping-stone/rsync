@@ -531,7 +531,7 @@ get_addr(hostname, af, res, pai, port0)
 	int i, error = 0, h_error;
 	char *ap;
 #ifndef INET6
-	extern int h_errno;
+//	extern int h_errno;
 #endif
 
 	top = NULL;

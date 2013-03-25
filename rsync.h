@@ -653,6 +653,8 @@ struct stats {
 
 struct chmod_mode_struct;
 
+#include "mingw.h"
+
 #include "byteorder.h"
 #include "lib/mdfour.h"
 #include "lib/wildmatch.h"
@@ -887,4 +889,14 @@ int inet_pton(int af, const char *src, void *dst);
 
 #ifdef MAINTAINER_MODE
 const char *get_panic_action(void);
+#endif
+
+#define mkdir(...) __mkdir(__VA_ARGS__)
+
+#ifndef DEF_REN
+#define rename(...) __rename(__VA_ARGS__)
+#define fopen(...) __fopen(__VA_ARGS__)
+#define opendir(...) __opendir(__VA_ARGS__)
+#define readdir(...) __readdir(__VA_ARGS__)
+#define closedir(...) __closedir(__VA_ARGS__)
 #endif

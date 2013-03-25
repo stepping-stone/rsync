@@ -66,25 +66,25 @@ int msg_fd_out = -1;
 int sock_f_in = -1;
 int sock_f_out = -1;
 
-static int io_multiplexing_out;
-static int io_multiplexing_in;
-static time_t last_io_in;
-static time_t last_io_out;
-static int no_flush;
+int io_multiplexing_out;
+int io_multiplexing_in;
+time_t last_io_in;
+time_t last_io_out;
+int no_flush;
 
-static int write_batch_monitor_in = -1;
-static int write_batch_monitor_out = -1;
+int write_batch_monitor_in = -1;
+int write_batch_monitor_out = -1;
 
-static int io_filesfrom_f_in = -1;
-static int io_filesfrom_f_out = -1;
-static char io_filesfrom_buf[2048];
-static char *io_filesfrom_bp;
-static char io_filesfrom_lastchar;
-static int io_filesfrom_buflen;
-static int defer_forwarding_messages = 0;
-static int select_timeout = SELECT_TIMEOUT;
-static int active_filecnt = 0;
-static OFF_T active_bytecnt = 0;
+int io_filesfrom_f_in = -1;
+int io_filesfrom_f_out = -1;
+char io_filesfrom_buf[2048];
+char *io_filesfrom_bp;
+char io_filesfrom_lastchar;
+int io_filesfrom_buflen;
+int defer_forwarding_messages = 0;
+int select_timeout = SELECT_TIMEOUT;
+int active_filecnt = 0;
+OFF_T active_bytecnt = 0;
 
 static void read_loop(int fd, char *buf, size_t len);
 
@@ -669,8 +669,8 @@ int read_filesfrom_line(int fd, char *fname)
 	return s - fname;
 }
 
-static char *iobuf_out;
-static int iobuf_out_cnt;
+char *iobuf_out;
+int iobuf_out_cnt;
 
 void io_start_buffering_out(void)
 {
@@ -681,8 +681,8 @@ void io_start_buffering_out(void)
 	iobuf_out_cnt = 0;
 }
 
-static char *iobuf_in;
-static size_t iobuf_in_siz;
+char *iobuf_in;
+size_t iobuf_in_siz;
 
 void io_start_buffering_in(void)
 {

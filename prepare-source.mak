@@ -23,3 +23,7 @@ rsync.1: rsync.yo
 rsyncd.conf.5: rsyncd.conf.yo
 	yodl2man -o rsyncd.conf.5 rsyncd.conf.yo
 	-./tweak_manpage_dashes rsyncd.conf.5
+
+global.h: $(OBJS1:.o=.c)  $(OBJS2:.o=.c) $(OBJS3:.o=.c)
+	echo  $(OBJS1:.o=.c)  $(OBJS2:.o=.c) $(OBJS3:.o=.c)
+	cat $(OBJS1:.o=.c)  $(OBJS2:.o=.c) $(OBJS3:.o=.c) | awk -f mkglobal.awk >global.h

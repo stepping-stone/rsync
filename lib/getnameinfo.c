@@ -81,7 +81,7 @@ getnameinfo(sa, salen, host, hostlen, serv, servlen, flags)
 	size_t servlen;
 	int flags;
 {
-	extern int h_errno;
+//	extern int h_errno;
 	struct afd *afd;
 	struct servent *sp;
 	struct hostent *hp;

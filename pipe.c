@@ -46,55 +46,87 @@ extern struct chmod_mode_struct *chmod_modes;
  **/
 pid_t piped_child(char **command, int *f_in, int *f_out)
 {
-	pid_t pid;
-	int to_child_pipe[2];
-	int from_child_pipe[2];
+	SECURITY_ATTRIBUTES saAttr;
+	HANDLE hChildStdinRd = 0;
+	HANDLE hChildStdinWr = 0;
+	HANDLE hChildStdoutRd = 0;
+	HANDLE hChildStdoutWr = 0;
+	BOOL bFuncRetn;
+	char buf[1024];
+	char** args;
 
 	if (verbose >= 2) {
 		print_child_argv(command);
 	}
 
-	if (fd_pair(to_child_pipe) < 0 || fd_pair(from_child_pipe) < 0) {
+	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	saAttr.bInheritHandle = TRUE;
+	saAttr.lpSecurityDescriptor = NULL;
+
+	if (! CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 65536))
+	{
 		rsyserr(FERROR, errno, "pipe");
 		exit_cleanup(RERR_IPC);
 	}
+	SetHandleInformation( hChildStdoutRd, HANDLE_FLAG_INHERIT, 0);
 
-	pid = do_fork();
-	if (pid == -1) {
-		rsyserr(FERROR, errno, "fork");
+	if (! CreatePipe(&hChildStdinRd, &hChildStdinWr, &saAttr, 65536))
+	{
+		rsyserr(FERROR, errno, "pipe");
 		exit_cleanup(RERR_IPC);
 	}
+	SetHandleInformation( hChildStdinWr, HANDLE_FLAG_INHERIT, 0);
 
-	if (pid == 0) {
-		if (dup2(to_child_pipe[0], STDIN_FILENO) < 0 ||
-		    close(to_child_pipe[1]) < 0 ||
-		    close(from_child_pipe[0]) < 0 ||
-		    dup2(from_child_pipe[1], STDOUT_FILENO) < 0) {
-			rsyserr(FERROR, errno, "Failed to dup/close");
-			exit_cleanup(RERR_IPC);
+	memset(buf, 0, sizeof(buf)/sizeof(char));
+	args=command;
+	while (*args)
+	{
+		if (strlen(buf) + strlen(*args) + 3 < sizeof(buf)/sizeof(char))
+		{
+			strcat(buf, "\"");
+			strcat(buf, *args);
+			strcat(buf, "\" ");
 		}
-		if (to_child_pipe[0] != STDIN_FILENO)
-			close(to_child_pipe[0]);
-		if (from_child_pipe[1] != STDOUT_FILENO)
-			close(from_child_pipe[1]);
-		umask(orig_umask);
-		set_blocking(STDIN_FILENO);
-		if (blocking_io > 0)
-			set_blocking(STDOUT_FILENO);
-		execvp(command[0], command);
-		rsyserr(FERROR, errno, "Failed to exec %s", command[0]);
-		exit_cleanup(RERR_IPC);
+		args++;
 	}
 
-	if (close(from_child_pipe[1]) < 0 || close(to_child_pipe[0]) < 0) {
+	PROCESS_INFORMATION piProcInfo;
+	STARTUPINFO siStartInfo;
+	ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
+	ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+	siStartInfo.cb = sizeof(STARTUPINFO);
+	siStartInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+	siStartInfo.hStdOutput = hChildStdoutWr;
+	siStartInfo.hStdInput = hChildStdinRd;
+	siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	 bFuncRetn = CreateProcess(NULL,
+			buf,     // command line
+			NULL,          // process security attributes
+			NULL,          // primary thread security attributes
+			TRUE,          // handles are inherited
+			0,             // creation flags
+			NULL,          // use parent's environment
+			NULL,          // use parent's current directory
+			&siStartInfo,  // STARTUPINFO pointer
+			&piProcInfo);  // receives PROCESS_INFORMATION
+
+	SetHandleInformation( hChildStdinWr, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation( hChildStdoutRd, HANDLE_FLAG_INHERIT, 1);
+
+	SetHandleInformation( hChildStdinRd, HANDLE_FLAG_INHERIT, 0);
+	SetHandleInformation( hChildStdoutWr, HANDLE_FLAG_INHERIT, 0);
+
+	if (!CloseHandle(hChildStdoutWr) || !CloseHandle(hChildStdinRd))
+	{
 		rsyserr(FERROR, errno, "Failed to close");
 		exit_cleanup(RERR_IPC);
 	}
 
-	*f_in = from_child_pipe[0];
-	*f_out = to_child_pipe[1];
+	*f_in = _open_osfhandle((intptr_t) hChildStdoutRd, O_RDONLY);
+	*f_out = _open_osfhandle((intptr_t) hChildStdinWr, 0);
 
-	return pid;
+	return (pid_t) piProcInfo.hProcess;
 }
 
 /* This function forks a child which calls child_main().  First,
