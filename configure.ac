@@ -1,6 +1,8 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT([rsync], [3.1.2dev], [http://rsync.samba.org/bugzilla.html])
+AM_INIT_AUTOMAKE([subdir-objects tar-ustar foreign])
+AM_MAINTAINER_MODE
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([byteorder.h])
@@ -46,6 +48,7 @@ AC_PROG_EGREP
 AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_PROG_CC_STDC
+AC_PROG_RANLIB
 AC_SUBST(SHELL)
 AC_PATH_PROG([PERL], [perl])
 
@@ -769,7 +772,6 @@ fi
 AC_MSG_CHECKING([whether to use included libpopt])
 if test x"$with_included_popt" = x"yes"; then
     AC_MSG_RESULT($srcdir/popt)
-    BUILD_POPT='$(popt_OBJS)'
     CFLAGS="-I$srcdir/popt $CFLAGS"
     if test x"$ALLOCA" != x
     then
@@ -780,6 +782,8 @@ if test x"$with_included_popt" = x"yes"; then
 else
     AC_MSG_RESULT(no)
 fi
+
+AM_CONDITIONAL([BUILD_POPT], [test x"$with_included_popt" = x"yes"])
 
 # We default to using our zlib unless --with-included-zlib=no is given.
 if test x"$with_included_zlib" != x"no"; then
@@ -794,12 +798,13 @@ fi
 AC_MSG_CHECKING([whether to use included zlib])
 if test x"$with_included_zlib" = x"yes"; then
     AC_MSG_RESULT($srcdir/zlib)
-    BUILD_ZLIB='$(zlib_OBJS)'
     CFLAGS="-I$srcdir/zlib $CFLAGS"
 else
     AC_DEFINE(EXTERNAL_ZLIB, 1, [Define to 1 if using external zlib])
     AC_MSG_RESULT(no)
 fi
+
+AM_CONDITIONAL([BUILD_ZLIB], [test x"$with_included_zlib" = x"yes"])
 
 AC_CACHE_CHECK([for unsigned char],rsync_cv_SIGNED_CHAR_OK,[
 AC_TRY_COMPILE([],[signed char *s = ""],
@@ -953,8 +958,6 @@ fi
 AC_SUBST(OBJ_SAVE)
 AC_SUBST(OBJ_RESTORE)
 AC_SUBST(CC_SHOBJ_FLAG)
-AC_SUBST(BUILD_POPT)
-AC_SUBST(BUILD_ZLIB)
 AC_SUBST(MAKE_MAN)
 
 AC_PATH_PROG([STUNNEL], [stunnel], [stunnel], [$PATH$PATH_SEPARATOR/usr/sbin$PATH_SEPARATOR/sbin])
