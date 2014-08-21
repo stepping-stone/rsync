@@ -118,11 +118,6 @@ xstrdup(const char *s)
 #define	getenv(_s)	__secure_getenv(_s)
 #endif
 
-#if !defined HAVE_SNPRINTF || !defined HAVE_C99_VSNPRINTF
-#define snprintf rsync_snprintf
-int snprintf(char *str,size_t count,const char *fmt,...);
-#endif
-
 #define UNUSED(x) x __attribute__((__unused__))
 
 #define PACKAGE "rsync"

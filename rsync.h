@@ -357,9 +357,7 @@ enum delret {
 #endif
 
 #include <signal.h>
-#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
-#endif
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 #endif
@@ -392,9 +390,7 @@ enum delret {
 #endif
 #endif
 
-#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
-#endif
 
 #ifdef HAVE_SYS_MODE_H
 /* apparently AIX needs this for S_ISLNK */
@@ -408,10 +404,12 @@ enum delret {
 #include <grp.h>
 
 #include <stdarg.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#ifdef HAVE_NETDB_H
 #include <netdb.h>
+#include <sys/types.h>
+#if HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#elif HAVE_WS2TCPIP_H
+# include <ws2tcpip.h>
 #endif
 #include <syslog.h>
 #include <sys/file.h>
@@ -974,7 +972,6 @@ typedef struct {
 #include "lib/mdigest.h"
 #include "lib/wildmatch.h"
 #include "lib/permstring.h"
-#include "lib/addrinfo.h"
 
 #ifndef __GNUC__
 #define __attribute__(x)
@@ -1011,26 +1008,6 @@ typedef struct {
 #define x_fstat(fd,fst,xst) do_fstat(fd,fst)
 #endif
 
-/* We have replacement versions of these if they're missing. */
-#ifndef HAVE_ASPRINTF
-int asprintf(char **ptr, const char *format, ...);
-#endif
-
-#ifndef HAVE_VASPRINTF
-int vasprintf(char **ptr, const char *format, va_list ap);
-#endif
-
-#if !defined HAVE_VSNPRINTF || !defined HAVE_C99_VSNPRINTF
-#define vsnprintf rsync_vsnprintf
-int vsnprintf(char *str, size_t count, const char *fmt, va_list args);
-#endif
-
-#if !defined HAVE_SNPRINTF || !defined HAVE_C99_VSNPRINTF
-#define snprintf rsync_snprintf
-int snprintf(char *str, size_t count, const char *fmt,...);
-#endif
-
-
 #ifndef HAVE_STRERROR
 extern char *sys_errlist[];
 #define strerror(i) sys_errlist[i]
@@ -1055,12 +1032,7 @@ extern int errno;
 #define SUPPORT_HARD_LINKS 1
 #endif
 
-#ifdef HAVE_SIGACTION
 #define SIGACTION(n,h) sigact.sa_handler=(h), sigaction((n),&sigact,NULL)
-#define signal(n,h) we_need_to_call_SIGACTION_not_signal(n,h)
-#else
-#define SIGACTION(n,h) signal(n,h)
-#endif
 
 #ifndef EWOULDBLOCK
 #define EWOULDBLOCK EAGAIN
@@ -1285,9 +1257,7 @@ const char *inet_ntop(int af, const void *src, char *dst, size_t size);
 int inet_pton(int af, const char *src, void *dst);
 #endif
 
-#ifndef HAVE_GETPASS
-char *getpass(const char *prompt);
-#endif
+#include "getpass.h"
 
 #ifdef MAINTAINER_MODE
 const char *get_panic_action(void);

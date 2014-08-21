@@ -32,7 +32,6 @@
 #ifdef HAVE_NETINET_IP_H
 #include <netinet/ip.h>
 #endif
-#include <netinet/tcp.h>
 
 extern char *bind_address;
 extern char *sockopts;
@@ -534,20 +533,14 @@ static RETSIGTYPE sigchld_handler(UNUSED(int val))
 #ifdef WNOHANG
 	while (waitpid(-1, NULL, WNOHANG) > 0) {}
 #endif
-#ifndef HAVE_SIGACTION
-	signal(SIGCHLD, sigchld_handler);
-#endif
 }
-
 
 void start_accept_loop(int port, int (*fn)(int, int))
 {
 	fd_set deffds;
 	int *sp, maxfd, i;
 
-#ifdef HAVE_SIGACTION
 	sigact.sa_flags = SA_NOCLDSTOP;
-#endif
 
 	/* open an incoming socket */
 	sp = open_socket_in(SOCK_STREAM, port, bind_address, default_af_hint);

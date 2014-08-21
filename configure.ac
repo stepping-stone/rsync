@@ -49,6 +49,10 @@ AC_PROG_INSTALL
 AC_PROG_MKDIR_P
 AC_PROG_CC_STDC
 AC_PROG_RANLIB
+
+gl_EARLY
+gl_INIT
+
 AC_SUBST(SHELL)
 AC_PATH_PROG([PERL], [perl])
 
@@ -418,8 +422,6 @@ AC_CHECK_MEMBERS([struct stat.st_rdev,
 #include <unistd.h>
 #endif])
 
-TYPE_SOCKLEN_T
-
 AC_CACHE_CHECK([for errno in errno.h],rsync_cv_errno, [
     AC_TRY_COMPILE([#include <errno.h>],[int i = errno],
 	rsync_cv_errno=yes,rsync_cv_have_errno_decl=no)])
@@ -497,74 +499,6 @@ dnl AC_MSG_NOTICE([Looking in libraries: $LIBS])
 
 AC_REPLACE_FUNCS([inet_ntop inet_pton])
 
-AC_HAVE_TYPE([struct addrinfo], [#include <netdb.h>])
-AC_HAVE_TYPE([struct sockaddr_storage], [#include <sys/types.h>
-#include <sys/socket.h>])
-
-# Irix 6.5 has getaddrinfo but not the corresponding defines, so use
-#   builtin getaddrinfo if one of the defines don't exist
-AC_CACHE_CHECK([whether defines needed by getaddrinfo exist],
-               rsync_cv_HAVE_GETADDR_DEFINES,[
-			AC_EGREP_CPP(yes, [
-			#include <sys/types.h>
-			#include <sys/socket.h>
-			#include <netdb.h>
-			#ifdef AI_PASSIVE
-			yes
-			#endif],
-			rsync_cv_HAVE_GETADDR_DEFINES=yes,
-			rsync_cv_HAVE_GETADDR_DEFINES=no)])
-AS_IF([test x"$rsync_cv_HAVE_GETADDR_DEFINES" = x"yes" -a x"$ac_cv_type_struct_addrinfo" = x"yes"],[
-	# Tru64 UNIX has getaddrinfo() but has it renamed in libc as
-	# something else so we must include <netdb.h> to get the
-	# redefinition.
-	AC_CHECK_FUNCS(getaddrinfo, ,
-		[AC_MSG_CHECKING([for getaddrinfo by including <netdb.h>])
-		AC_TRY_LINK([#include <sys/types.h>
-		#include <sys/socket.h>
-		#include <netdb.h>],[getaddrinfo(NULL, NULL, NULL, NULL);],
-			[AC_MSG_RESULT([yes])
-			AC_DEFINE(HAVE_GETADDRINFO, 1,
-				[Define to 1 if you have the "getaddrinfo" function and required types.])],
-			[AC_MSG_RESULT([no])
-			AC_LIBOBJ([getaddrinfo])])])
-    ],[AC_LIBOBJ([getaddrinfo])])
-
-AC_CHECK_MEMBER([struct sockaddr.sa_len],
-		[ AC_DEFINE(HAVE_SOCKADDR_LEN, 1, [Do we have sockaddr.sa_len?]) ],
-		[],
-		[
-#include <sys/types.h>
-#include <sys/socket.h>
-])
-
-AC_CHECK_MEMBER([struct sockaddr_in.sin_len],
-		[ AC_DEFINE(HAVE_SOCKADDR_IN_LEN, 1, [Do we have sockaddr_in.sin_len?]) ],
-		[],
-		[
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-])
-
-AC_CHECK_MEMBER([struct sockaddr_un.sun_len],
-		[ AC_DEFINE(HAVE_SOCKADDR_UN_LEN, 1, [Do we have sockaddr_un.sun_len?]) ],
-		[],
-		[
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-])
-
-AC_CHECK_MEMBER([struct sockaddr_in6.sin6_scope_id],
-		[ AC_DEFINE(HAVE_SOCKADDR_IN6_SCOPE_ID, 1, [Do we have sockaddr_in6.sin6_scope_id?]) ],
-		[],
-		[
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-])
-
 AC_HAVE_TYPE([struct stat64], [#include <stdio.h>
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -608,7 +542,7 @@ AC_CHECK_FUNCS(waitpid wait4 getcwd strdup chown chmod lchmod mknod mkfifo \
     setlocale setmode open64 lseek64 mkstemp64 mtrace va_copy __va_copy \
     seteuid strerror putenv iconv_open locale_charset nl_langinfo getxattr \
     extattr_get_link sigaction sigprocmask setattrlist getgrouplist \
-    initgroups utimensat posix_fallocate attropen setvbuf usleep)
+    initgroups utimensat posix_fallocate attropen setvbuf usleep getpass)
 
 dnl cygwin iconv.h defines iconv_open as libiconv_open
 if test x"$ac_cv_func_iconv_open" != x"yes"; then
@@ -753,8 +687,6 @@ rsync_cv_HAVE_SOCKETPAIR=yes,rsync_cv_HAVE_SOCKETPAIR=no,rsync_cv_HAVE_SOCKETPAI
 if test x"$rsync_cv_HAVE_SOCKETPAIR" = x"yes"; then
     AC_DEFINE(HAVE_SOCKETPAIR, 1, [Define to 1 if you have the "socketpair" function])
 fi
-
-AC_REPLACE_FUNCS([getpass])
 
 if test x"$with_included_popt" != x"yes"; then
     AC_CHECK_LIB(popt, poptGetContext, , [with_included_popt=yes])
@@ -1112,7 +1044,7 @@ case "$CC" in
     ;;
 esac
 
-AC_CONFIG_FILES([Makefile lib/dummy zlib/dummy popt/dummy shconfig])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/dummy zlib/dummy popt/dummy shconfig])
 AC_OUTPUT
 
 AC_MSG_RESULT()

@@ -108,14 +108,12 @@ int sender_keeps_checksum = 0;
  * but set it higher, just in case. */
 #define MAXCHILDPROCS 7
 
-#ifdef HAVE_SIGACTION
 # ifdef HAVE_SIGPROCMASK
 #  define SIGACTMASK(n,h) SIGACTION(n,h), sigaddset(&sigmask,(n))
 # else
 #  define SIGACTMASK(n,h) SIGACTION(n,h)
 # endif
 static struct sigaction sigact;
-#endif
 
 struct pid_status {
 	pid_t pid;
@@ -1447,9 +1445,6 @@ RETSIGTYPE remember_children(UNUSED(int val))
 		}
 	}
 #endif
-#ifndef HAVE_SIGACTION
-	signal(SIGCHLD, remember_children);
-#endif
 }
 
 
@@ -1508,17 +1503,17 @@ int main(int argc,char *argv[])
 	int ret;
 	int orig_argc = argc;
 	char **orig_argv = argv;
-#ifdef HAVE_SIGACTION
 # ifdef HAVE_SIGPROCMASK
 	sigset_t sigmask;
 
 	sigemptyset(&sigmask);
 # endif
+#ifdef SIGCHLD
 	sigact.sa_flags = SA_NOCLDSTOP;
+	SIGACTMASK(SIGCHLD, remember_children);
 #endif
 	SIGACTMASK(SIGUSR1, sigusr1_handler);
 	SIGACTMASK(SIGUSR2, sigusr2_handler);
-	SIGACTMASK(SIGCHLD, remember_children);
 #ifdef MAINTAINER_MODE
 	SIGACTMASK(SIGSEGV, rsync_panic_handler);
 	SIGACTMASK(SIGFPE, rsync_panic_handler);
@@ -1557,7 +1552,7 @@ int main(int argc,char *argv[])
 	SIGACTMASK(SIGINT, sig_int);
 	SIGACTMASK(SIGHUP, sig_int);
 	SIGACTMASK(SIGTERM, sig_int);
-#if defined HAVE_SIGACTION && HAVE_SIGPROCMASK
+#ifdef HAVE_SIGPROCMASK
 	sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
 #endif
 
