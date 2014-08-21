@@ -151,6 +151,7 @@ pid_t wait_process(pid_t pid, int *status_ptr, int flags)
 	return waited_pid;
 }
 
+#ifndef WIN32
 /* Wait for a process to exit, calling io_flush while waiting. */
 static void wait_process_with_flush(pid_t pid, int *exit_code_ptr)
 {
@@ -182,6 +183,11 @@ static void wait_process_with_flush(pid_t pid, int *exit_code_ptr)
 	} else
 		*exit_code_ptr = WEXITSTATUS(status);
 }
+#else
+static void wait_process_with_flush(pid_t pid, int *exit_code_ptr)
+{
+}
+#endif
 
 void write_del_stats(int f)
 {
@@ -864,6 +870,8 @@ static int do_recv(int f_in, int f_out, char *local_name)
 		exit_cleanup(RERR_IPC);
 	}
 
+/* fork fails on WIN32 anyway */
+#ifndef WIN32
 	if (pid == 0) {
 		am_receiver = 1;
 		send_msgs_to_gen = am_server;
@@ -953,6 +961,7 @@ static int do_recv(int f_in, int f_out, char *local_name)
 
 	kill(pid, SIGUSR2);
 	wait_process_with_flush(pid, &exit_code);
+#endif
 	return exit_code;
 }
 
@@ -1512,8 +1521,10 @@ int main(int argc,char *argv[])
 	sigact.sa_flags = SA_NOCLDSTOP;
 	SIGACTMASK(SIGCHLD, remember_children);
 #endif
+#ifndef WIN32
 	SIGACTMASK(SIGUSR1, sigusr1_handler);
 	SIGACTMASK(SIGUSR2, sigusr2_handler);
+#endif
 #ifdef MAINTAINER_MODE
 	SIGACTMASK(SIGSEGV, rsync_panic_handler);
 	SIGACTMASK(SIGFPE, rsync_panic_handler);
@@ -1522,8 +1533,13 @@ int main(int argc,char *argv[])
 #endif
 
 	starttime = time(NULL);
+#ifndef WIN32
 	our_uid = MY_UID();
 	our_gid = MY_GID();
+#else
+	our_uid = 0;
+	our_gid = 0;
+#endif
 	am_root = our_uid == 0;
 
 	memset(&stats, 0, sizeof(stats));
@@ -1550,7 +1566,9 @@ int main(int argc,char *argv[])
 	}
 
 	SIGACTMASK(SIGINT, sig_int);
+#ifndef WIN32
 	SIGACTMASK(SIGHUP, sig_int);
+#endif
 	SIGACTMASK(SIGTERM, sig_int);
 #ifdef HAVE_SIGPROCMASK
 	sigprocmask(SIG_UNBLOCK, &sigmask, NULL);
@@ -1558,7 +1576,9 @@ int main(int argc,char *argv[])
 
 	/* Ignore SIGPIPE; we consistently check error codes and will
 	 * see the EPIPE. */
+#ifndef WIN32
 	SIGACTION(SIGPIPE, SIG_IGN);
+#endif
 #ifdef SIGXFSZ
 	SIGACTION(SIGXFSZ, SIG_IGN);
 #endif

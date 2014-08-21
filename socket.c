@@ -269,11 +269,12 @@ int open_socket_out(char *host, int port, const char *bind_addr,
 			s = -1;
 			continue;
 		}
+#ifndef WIN32
 		if (connect_timeout > 0) {
 			SIGACTION(SIGALRM, contimeout_handler);
 			alarm(connect_timeout);
 		}
-
+#endif
 		set_socket_options(s, sockopts);
 		while (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
 			if (connect_timeout < 0)
@@ -284,10 +285,10 @@ int open_socket_out(char *host, int port, const char *bind_addr,
 			s = -1;
 			break;
 		}
-
+#ifndef WIN32
 		if (connect_timeout > 0)
 			alarm(0);
-
+#endif
 		if (s < 0) {
 			errnos[j] = errno;
 			continue;
@@ -391,6 +392,7 @@ int open_socket_out_wrapped(char *host, int port, const char *bind_addr,
 }
 
 
+#ifndef WIN32
 /* Open one or more sockets for incoming data using the specified type,
  * port, and address.
  *
@@ -503,7 +505,7 @@ static int *open_socket_in(int type, int port, const char *bind_addr,
 	}
 	return socks;
 }
-
+#endif
 
 /* Determine if a file descriptor is in fact a socket. */
 int is_a_socket(int fd)
@@ -527,7 +529,7 @@ int is_a_socket(int fd)
 	return getsockopt(fd, SOL_SOCKET, SO_TYPE, (char *)&v, &l) == 0;
 }
 
-
+#ifndef WIN32
 static RETSIGTYPE sigchld_handler(UNUSED(int val))
 {
 #ifdef WNOHANG
@@ -625,7 +627,7 @@ void start_accept_loop(int port, int (*fn)(int, int))
 		}
 	}
 }
-
+#endif
 
 enum SOCK_OPT_TYPES {OPT_BOOL,OPT_INT,OPT_ON};
 
@@ -739,6 +741,7 @@ void set_socket_options(int fd, char *options)
 }
 
 
+#ifndef WIN32
 /* This is like socketpair but uses tcp.  The function guarantees that nobody
  * else can attach to the socket, or if they do that this function fails and
  * the socket gets closed.  Returns 0 on success, -1 on failure.  The resulting
@@ -846,3 +849,10 @@ static int sock_exec(const char *prog)
 	close(fd[1]);
 	return fd[0];
 }
+#else
+static int sock_exec(const char *prog)
+{
+	return -1;
+}
+#endif
+

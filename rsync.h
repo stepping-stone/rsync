@@ -400,8 +400,10 @@ enum delret {
 #endif
 
 /* these are needed for the uid/gid mapping code */
+#ifndef WIN32
 #include <pwd.h>
 #include <grp.h>
+#endif
 
 #include <stdarg.h>
 #include <netdb.h>
@@ -411,7 +413,9 @@ enum delret {
 #elif HAVE_WS2TCPIP_H
 # include <ws2tcpip.h>
 #endif
+#ifndef WIN32
 #include <syslog.h>
+#endif
 #include <sys/file.h>
 
 #ifdef HAVE_DIRENT_H
@@ -436,6 +440,10 @@ enum delret {
 # endif
 #elif defined MAJOR_IN_SYSMACROS
 #include <sys/sysmacros.h>
+#else
+#define major(dev) ((int)(((dev) >> 16) & 0xffff))
+#define minor(dev) ((int)((dev) & 0xffff))
+#define makedev(major, minor) (((major) << 16) | ((minor) & 0xffff))
 #endif
 
 #ifdef MAKEDEV_TAKES_3_ARGS

@@ -99,24 +99,29 @@ static struct idlist *add_to_list(struct idlist **root, id_t id, union name_or_i
 /* turn a uid into a user name */
 char *uid_to_user(uid_t uid)
 {
+#ifndef WIN32
 	struct passwd *pass = getpwuid(uid);
 	if (pass)
 		return strdup(pass->pw_name);
+#endif
 	return NULL;
 }
 
 /* turn a gid into a group name */
 char *gid_to_group(gid_t gid)
 {
+#ifndef WIN32
 	struct group *grp = getgrgid(gid);
 	if (grp)
 		return strdup(grp->gr_name);
+#endif
 	return NULL;
 }
 
 /* Parse a user name or (optionally) a number into a uid */
 int user_to_uid(const char *name, uid_t *uid_p, BOOL num_ok)
 {
+#ifndef WIN32
 	struct passwd *pass;
 	if (!name || !*name)
 		return 0;
@@ -127,12 +132,14 @@ int user_to_uid(const char *name, uid_t *uid_p, BOOL num_ok)
 	if (!(pass = getpwnam(name)))
 		return 0;
 	*uid_p = pass->pw_uid;
+#endif
 	return 1;
 }
 
 /* Parse a group name or (optionally) a number into a gid */
 int group_to_gid(const char *name, gid_t *gid_p, BOOL num_ok)
 {
+#ifndef WIN32
 	struct group *grp;
 	if (!name || !*name)
 		return 0;
@@ -143,6 +150,7 @@ int group_to_gid(const char *name, gid_t *gid_p, BOOL num_ok)
 	if (!(grp = getgrnam(name)))
 		return 0;
 	*gid_p = grp->gr_gid;
+#endif
 	return 1;
 }
 

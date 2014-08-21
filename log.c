@@ -126,10 +126,13 @@ static void logit(int priority, const char *buf)
 		fprintf(logfile_fp, "%s [%d] %s", timestring(time(NULL)), (int)getpid(), buf);
 		fflush(logfile_fp);
 	} else {
+#ifndef WIN32
 		syslog(priority, "%s", buf);
+#endif
 	}
 }
 
+#ifndef WIN32
 static void syslog_init()
 {
 	static int been_here = 0;
@@ -153,6 +156,11 @@ static void syslog_init()
 	logit(LOG_INFO, "rsyncd started\n");
 #endif
 }
+#else
+static void syslog_init()
+{
+}
+#endif
 
 static void logfile_open(void)
 {
@@ -178,13 +186,18 @@ void log_init(int restart)
 			if (logfile_fp) {
 				fclose(logfile_fp);
 				logfile_fp = NULL;
-			} else
+			} else {
+#ifndef WIN32
 				closelog();
+#endif
+			}
 			logfile_name = NULL;
 		} else if (*logfile_name)
 			return; /* unchanged, non-empty "log file" names */
+#ifndef WIN32
 		else if (lp_syslog_facility(-1) != lp_syslog_facility(module_id))
 			closelog();
+#endif
 		else
 			return; /* unchanged syslog settings */
 	} else
@@ -290,7 +303,11 @@ void rwrite(enum logcode code, const char *buf, int len, int is_utf8)
 	else if (am_daemon || logfile_name) {
 		static int in_block;
 		char msg[2048];
+#ifndef WIN32
 		int priority = code == FINFO || code == FLOG ? LOG_INFO :  LOG_WARNING;
+#else
+		int priority = 0;
+#endif
 
 		if (in_block)
 			return;

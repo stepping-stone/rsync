@@ -118,9 +118,11 @@ static const char *check_secret(int module, const char *user, const char *group,
 		if ((st.st_mode & 06) != 0) {
 			rprintf(FLOG, "secrets file must not be other-accessible (see strict modes option)\n");
 			ok = 0;
+#ifndef WIN32
 		} else if (MY_UID() == 0 && st.st_uid != 0) {
 			rprintf(FLOG, "secrets file must be owned by root when running as root (see strict modes)\n");
 			ok = 0;
+#endif
 		}
 	}
 	if (!ok) {
@@ -195,10 +197,12 @@ static const char *getpassf(const char *filename)
 			rprintf(FERROR, "ERROR: password file must not be other-accessible\n");
 			exit_cleanup(RERR_SYNTAX);
 		}
+#ifndef WIN32
 		if (MY_UID() == 0 && st.st_uid != 0) {
 			rprintf(FERROR, "ERROR: password file must be owned by root when running as root\n");
 			exit_cleanup(RERR_SYNTAX);
 		}
+#endif
 
 		n = read(fd, buffer, sizeof buffer - 1);
 		close(fd);

@@ -501,6 +501,7 @@ static void set_env_num(const char *var, long num)
 }
 #endif
 
+#ifndef WIN32
 static int rsync_module(int f_in, int f_out, int i, const char *addr, const char *host)
 {
 	int argc;
@@ -1202,3 +1203,14 @@ int daemon_main(void)
 	start_accept_loop(rsync_port, start_daemon);
 	return -1;
 }
+#else
+int start_daemon(int f_in, int f_out)
+{
+	return -1;
+}
+
+int daemon_main(void)
+{
+	return -1;
+}
+#endif

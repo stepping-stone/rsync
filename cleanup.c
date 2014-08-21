@@ -93,6 +93,7 @@ static pid_t cleanup_pid = 0;
 
 pid_t cleanup_child_pid = -1;
 
+#ifndef WIN32
 /**
  * Eventually calls exit(), passing @p code, therefore does not return.
  *
@@ -269,6 +270,11 @@ NORETURN void _exit_cleanup(int code, const char *file, int line)
 
 	exit(exit_code);
 }
+#else
+NORETURN void _exit_cleanup(int code, const char *file, int line)
+{
+}
+#endif
 
 void cleanup_disable(void)
 {

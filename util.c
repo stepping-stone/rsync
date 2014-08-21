@@ -44,6 +44,7 @@ char curr_dir[MAXPATHLEN];
 unsigned int curr_dir_len;
 int curr_dir_depth; /* This is only set for a sanitizing daemon. */
 
+#ifndef WIN32
 /* Set a fd into nonblocking mode. */
 void set_nonblocking(int fd)
 {
@@ -56,7 +57,13 @@ void set_nonblocking(int fd)
 		fcntl(fd, F_SETFL, val);
 	}
 }
+#else
+void set_nonblocking(int fd)
+{
+}
+#endif
 
+#ifndef WIN32
 /* Set a fd into blocking mode. */
 void set_blocking(int fd)
 {
@@ -69,6 +76,11 @@ void set_blocking(int fd)
 		fcntl(fd, F_SETFL, val);
 	}
 }
+#else
+void set_blocking(int fd)
+{
+}
+#endif
 
 /**
  * Create a file descriptor pair - like pipe() but use socketpair if
@@ -531,6 +543,7 @@ int robust_rename(const char *from, const char *to, const char *partialptr,
 static pid_t all_pids[10];
 static int num_pids;
 
+#ifndef WIN32
 /** Fork and record the pid of the child. **/
 pid_t do_fork(void)
 {
@@ -541,7 +554,14 @@ pid_t do_fork(void)
 	}
 	return newpid;
 }
+#else
+pid_t do_fork(void)
+{
+	return -1;
+}
+#endif
 
+#ifndef WIN32
 /**
  * Kill all children.
  *
@@ -570,7 +590,13 @@ void kill_all(int sig)
 		kill(p, sig);
 	}
 }
+#else
+void kill_all(int sig)
+{
+}
+#endif
 
+#ifndef WIN32
 /** Lock a byte range in a open file */
 int lock_range(int fd, int offset, int len)
 {
@@ -584,6 +610,12 @@ int lock_range(int fd, int offset, int len)
 
 	return fcntl(fd,F_SETLK,&lock) == 0;
 }
+#else
+int lock_range(int fd, int offset, int len)
+{
+	return 1;
+}
+#endif
 
 #define ENSURE_MEMSPACE(buf, type, sz, req) \
 	if ((req) > sz && !(buf = realloc_array(buf, type, sz = MAX(sz * 2, req)))) \

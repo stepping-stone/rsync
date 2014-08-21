@@ -463,6 +463,7 @@ static void send_file_entry(int f, const char *fname, struct file_struct *file,
 		 * the historical transmission of the value efficient. */
 		if (protocol_version < 28)
 			xflags |= XMIT_SAME_RDEV_pre28;
+#ifndef WIN32
 		else {
 			rdev = MAKEDEV(major(rdev), 0);
 			xflags |= XMIT_SAME_RDEV_MAJOR;
@@ -471,6 +472,9 @@ static void send_file_entry(int f, const char *fname, struct file_struct *file,
 		}
 	} else if (protocol_version < 28)
 		rdev = MAKEDEV(0, 0);
+#else
+	}
+#endif
 	if (!preserve_uid || ((uid_t)F_OWNER(file) == uid && *lastname))
 		xflags |= XMIT_SAME_UID;
 	else {
@@ -783,11 +787,13 @@ static struct file_struct *recv_file_entry(int f, struct file_list *flist, int x
 				uid = F_OWNER(first);
 			if (preserve_gid)
 				gid = F_GROUP(first);
+#ifndef WIN32
 			if (preserve_devices && IS_DEVICE(mode)) {
 				uint32 *devp = F_RDEV_P(first);
 				rdev = MAKEDEV(DEV_MAJOR(devp), DEV_MINOR(devp));
 				extra_len += DEV_EXTRA_CNT * EXTRA_LEN;
 			}
+#endif
 			if (preserve_links && S_ISLNK(mode))
 				linkname_len = strlen(F_SYMLINK(first)) + 1;
 			else
@@ -850,6 +856,7 @@ static struct file_struct *recv_file_entry(int f, struct file_list *flist, int x
 		if (protocol_version < 28) {
 			if (!(xflags & XMIT_SAME_RDEV_pre28))
 				rdev = (dev_t)read_int(f);
+#ifndef WIN32
 		} else {
 			uint32 rdev_minor;
 			if (!(xflags & XMIT_SAME_RDEV_MAJOR))
@@ -861,13 +868,17 @@ static struct file_struct *recv_file_entry(int f, struct file_list *flist, int x
 			else
 				rdev_minor = read_int(f);
 			rdev = MAKEDEV(rdev_major, rdev_minor);
+#endif
 		}
 		if (IS_DEVICE(mode))
 			extra_len += DEV_EXTRA_CNT * EXTRA_LEN;
 		file_length = 0;
+#ifndef WIN32
 	} else if (protocol_version < 28)
 		rdev = MAKEDEV(0, 0);
-
+#else
+	}
+#endif
 #ifdef SUPPORT_LINKS
 	if (preserve_links && S_ISLNK(mode)) {
 		linkname_len = read_varint30(f) + 1; /* count the '\0' */
