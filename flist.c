@@ -24,7 +24,7 @@
 #include "ifuncs.h"
 #include "rounding.h"
 #include "inums.h"
-#include "io.h"
+#include "proto_io.h"
 
 extern int am_root;
 extern int am_server;
