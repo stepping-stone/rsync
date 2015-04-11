@@ -26,9 +26,15 @@ getgroups_SOURCES = getgroups.c
 getfsdev_SOURCES = getfsdev.c
 trimslash_SOURCES = trimslash.c syscall.c lib/compat.c lib/snprintf.c
 t_unsafe_SOURCES = t_unsafe.c syscall.c util.c util2.c t_stub.c lib/compat.c lib/snprintf.c lib/wildmatch.c
+wildtest_SOURCES = wildtest.c lib/compat.c lib/snprintf.c
 
-noinst_PROGRAMS = tls testrun getgroups getfsdev trimslash t_unsafe
+noinst_PROGRAMS = tls testrun getgroups getfsdev trimslash t_unsafe wildtest
 TESTS = runtests.sh
+AM_TESTS_ENVIRONMENT = \
+		       rsync_bin=$(top_builddir)/rsync$(EXEEXT) ; \
+		       $(LN_S) -f chown.test $(srcdir)/testsuite/chown-fake.test ; \
+		       $(LN_S) -f devices.test $(srcdir)/testsuite/devices-fake.test ; \
+		       $(LN_S) -f xattrs.test $(srcdir)/testsuite/xattrs-hlink.test ;
 
 if BUILD_ZLIB
 noinst_LIBRARIES += libz.a
@@ -47,11 +53,14 @@ libpopt_a_SOURCES = \
 
 rsync_LDADD += libpopt.a
 tls_LDADD = libpopt.a
+wildtest_LDADD = libpopt.a
 endif
 
 bin_SCRIPTS = rsync-ssl stunnel-rsync
 EXTRA_DIST = rsync-ssl.in stunnel-rsync.in stunnel-rsyncd.conf.in
 CLEANFILES = $(bin_SCRIPTS) stunnel-rsyncd.conf proto.h proto.h-tstamp rounding.h
+
+man_MANS = rsync.1 rsyncd.conf.5
 
 # The following two targets follow a common idiom for provisioning script files
 
@@ -107,3 +116,40 @@ rounding.h: rounding.c rsync.h
 	fi
 	$(AM_V_GEN)rm -f rounding.out
 
+rsync.1: rsync.yo
+	yodl2man -o rsync.1 $(srcdir)/rsync.yo
+	$(AM_V_GEN)$(srcdir)/tweak_manpage rsync.1
+
+rsyncd.conf.5: rsyncd.conf.yo
+	yodl2man -o rsyncd.conf.5 $(srcdir)/rsyncd.conf.yo
+	$(AM_V_GEN)$(srcdir)/tweak_manpage rsyncd.conf.5
+
+doxygen:
+	cd $(srcdir) && rm -f dox/html/* && doxygen
+
+# for maintainers only
+doxygen-upload:
+	rsync -avzv $(srcdir)/dox/html/ --delete \
+    samba.org:/home/httpd/html/rsync/doxygen/head/
+
+clean-local:
+	$(AM_V_GEN)rm -rf ./testtmp*
+	$(AM_V_GEN)rm -f $(srcdir)/testsuite/chown-fake.test $(srcdir)/testsuite/devices-fake.test $(srcdir)/testsuite/xattrs-hlink.test
+
+check29: all $(noinst_PROGRAMS)
+	rsync_bin=$(top_builddir)/rsync$(EXEEXT) $(srcdir)/runtests.sh --protocol=29
+
+check30: all $(noinst_PROGRAMS)
+	rsync_bin=$(top_builddir)/rsync$(EXEEXT) $(srcdir)/runtests.sh --protocol=30
+
+# Run the SPLINT (Secure Programming Lint) tool.  <www.splint.org>
+.PHONY: splint
+splint:
+	splint +unixlib +gnuextensions -weak rsync.c
+
+conf:
+	$(MAKE) -C $(srcdir) -f prepare-source.mak conf
+
+reconfigure: configure.sh
+	./config.status --recheck
+	./config.status

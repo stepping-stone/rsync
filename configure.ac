@@ -51,6 +51,7 @@ AC_PROG_CC_STDC
 AC_PROG_RANLIB
 AC_SUBST(SHELL)
 AC_PATH_PROG([PERL], [perl])
+AC_PROG_LN_S
 
 AC_DEFINE([_GNU_SOURCE], 1,
           [Define _GNU_SOURCE so that we get all necessary prototypes])
