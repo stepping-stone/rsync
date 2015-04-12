@@ -1008,7 +1008,6 @@ typedef struct {
 #ifndef SUPPORT_XATTRS
 #define x_stat(fn,fst,xst) do_stat(fn,fst)
 #define x_lstat(fn,fst,xst) do_lstat(fn,fst)
-#define x_fstat(fd,fst,xst) do_fstat(fd,fst)
 #endif
 
 /* We have replacement versions of these if they're missing. */
