@@ -1,4 +1,9 @@
 
+# Add gnulib
+ACLOCAL_AMFLAGS = -I m4
+SUBDIRS = lib
+AM_CPPFLAGS = -I$(top_builddir)/lib -I$(top_srcdir)/lib
+
 noinst_LIBRARIES = libcompat.a
 
 libcompat_a_SOURCES = \
@@ -17,7 +22,7 @@ rsync_SOURCES = \
 	fileio.c batch.c clientname.c chmod.c acls.c xattrs.c \
 	progress.c pipe.c \
 	params.c loadparm.c clientserver.c access.c connection.c authenticate.c
-rsync_LDADD = libcompat.a
+rsync_LDADD = lib/libgnu.a libcompat.a
 
 # Test targets
 tls_SOURCES = tls.c syscall.c lib/compat.c lib/snprintf.c lib/permstring.c lib/sysxattrs.c

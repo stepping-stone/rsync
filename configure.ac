@@ -53,6 +53,9 @@ AC_SUBST(SHELL)
 AC_PATH_PROG([PERL], [perl])
 AC_PROG_LN_S
 
+gl_EARLY
+gl_INIT
+
 AC_DEFINE([_GNU_SOURCE], 1,
           [Define _GNU_SOURCE so that we get all necessary prototypes])
 
@@ -1113,7 +1116,7 @@ case "$CC" in
     ;;
 esac
 
-AC_CONFIG_FILES([Makefile lib/dummy zlib/dummy popt/dummy shconfig])
+AC_CONFIG_FILES([Makefile lib/dummy zlib/dummy popt/dummy shconfig lib/Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT()

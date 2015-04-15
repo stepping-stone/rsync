@@ -46,3 +46,4 @@ aclocal.m4
 /testsuite/xattrs-hlink.test
 /patches
 .deps
+.dirstamp
