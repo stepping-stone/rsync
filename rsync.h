@@ -326,7 +326,9 @@ enum delret {
 #endif
 
 #ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
+# include <sys/socket.h>
+#elif HAVE_WS2TCPIP_H
+# include <ws2tcpip.h>
 #endif
 
 #ifdef TIME_WITH_SYS_TIME

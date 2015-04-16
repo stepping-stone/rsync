@@ -422,8 +422,6 @@ AC_CHECK_MEMBERS([struct stat.st_rdev,
 #include <unistd.h>
 #endif])
 
-TYPE_SOCKLEN_T
-
 AC_CACHE_CHECK([for errno in errno.h],rsync_cv_errno, [
     AC_TRY_COMPILE([#include <errno.h>],[int i = errno],
 	rsync_cv_errno=yes,rsync_cv_have_errno_decl=no)])

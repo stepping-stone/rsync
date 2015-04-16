@@ -38,6 +38,7 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
+  # Code from module socklen:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -56,6 +57,7 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='lib'
+  gl_TYPE_SOCKLEN_T
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -199,4 +201,5 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/dummy.c
   m4/00gnulib.m4
   m4/gnulib-common.m4
+  m4/socklen.m4
 ])
