@@ -465,8 +465,6 @@ if test x"$ac_cv_func_connect" = x"no"; then
     fi
 fi
 
-AC_SEARCH_LIBS(inet_ntop, resolv)
-
 # For OS X, Solaris, HP-UX, etc.: figure out if -liconv is needed.  We'll
 # accept either iconv_open or libiconv_open, since some include files map
 # the former to the latter.
@@ -497,7 +495,7 @@ AC_DEFINE_UNQUOTED(ICONV_CONST, $am_cv_proto_iconv_arg1,
 
 dnl AC_MSG_NOTICE([Looking in libraries: $LIBS])
 
-AC_REPLACE_FUNCS([inet_ntop inet_pton])
+AC_REPLACE_FUNCS([inet_pton])
 
 AC_HAVE_TYPE([struct sockaddr_storage], [#include <sys/types.h>
 #include <sys/socket.h>])

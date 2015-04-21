@@ -1279,10 +1279,6 @@ extern short info_levels[], debug_levels[];
 
 #define COUNT_DEBUG (DEBUG_TIME+1)
 
-#ifndef HAVE_INET_NTOP
-const char *inet_ntop(int af, const void *src, char *dst, size_t size);
-#endif
-
 #ifndef HAVE_INET_PTON
 int inet_pton(int af, const char *src, void *dst);
 #endif
