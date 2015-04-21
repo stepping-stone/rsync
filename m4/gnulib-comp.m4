@@ -41,7 +41,10 @@ AC_DEFUN([gl_EARLY],
   # Code from module absolute-header:
   # Code from module arpa_inet:
   # Code from module errno:
+  # Code from module extensions:
+  AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module gettimeofday:
   # Code from module include_next:
   # Code from module netdb:
   # Code from module netinet_in:
@@ -51,9 +54,13 @@ AC_DEFUN([gl_EARLY],
   # Code from module socklen:
   # Code from module ssize_t:
   # Code from module stdalign:
+  # Code from module stddef:
   # Code from module sys_socket:
+  # Code from module sys_stat:
+  # Code from module sys_time:
   # Code from module sys_types:
   # Code from module sys_uio:
+  # Code from module time:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -76,18 +83,30 @@ AC_DEFUN([gl_INIT],
   AC_PROG_MKDIR_P
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FUNC_GETTIMEOFDAY
+  if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
+    AC_LIBOBJ([gettimeofday])
+    gl_PREREQ_GETTIMEOFDAY
+  fi
+  gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
   gl_HEADER_NETDB
   gl_HEADER_NETINET_IN
   AC_PROG_MKDIR_P
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
+  gl_STDDEF_H
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_PROG_MKDIR_P
+  gl_HEADER_SYS_STAT_H
+  AC_PROG_MKDIR_P
+  gl_HEADER_SYS_TIME_H
   AC_PROG_MKDIR_P
   gl_SYS_TYPES_H
   AC_PROG_MKDIR_P
   gl_HEADER_SYS_UIO
   AC_PROG_MKDIR_P
+  gl_HEADER_TIME_H
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -233,18 +252,25 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/warn-on-use.h
   lib/arpa_inet.in.h
   lib/errno.in.h
+  lib/gettimeofday.c
   lib/netdb.in.h
   lib/netinet_in.in.h
   lib/stdalign.in.h
+  lib/stddef.in.h
   lib/sys_socket.c
   lib/sys_socket.in.h
+  lib/sys_stat.in.h
+  lib/sys_time.in.h
   lib/sys_types.in.h
   lib/sys_uio.in.h
+  lib/time.in.h
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/arpa_inet_h.m4
   m4/errno_h.m4
+  m4/extensions.m4
   m4/extern-inline.m4
+  m4/gettimeofday.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/netdb_h.m4
@@ -254,8 +280,14 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/sockpfaf.m4
   m4/ssize_t.m4
   m4/stdalign.m4
+  m4/stddef_h.m4
   m4/sys_socket_h.m4
+  m4/sys_stat_h.m4
+  m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/sys_uio_h.m4
+  m4/time_h.m4
+  m4/unistd_h.m4
   m4/warn-on-use.m4
+  m4/wchar_t.m4
 ])
