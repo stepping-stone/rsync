@@ -405,9 +405,11 @@ enum delret {
 #endif
 #endif
 
+#ifndef WIN32
 /* these are needed for the uid/gid mapping code */
 #include <pwd.h>
 #include <grp.h>
+#endif
 
 #include <stdarg.h>
 #include <netinet/in.h>
