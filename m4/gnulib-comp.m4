@@ -40,12 +40,14 @@ AC_DEFUN([gl_EARLY],
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   # Code from module absolute-header:
   # Code from module arpa_inet:
+  # Code from module c-ctype:
   # Code from module errno:
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
   # Code from module gettimeofday:
   # Code from module include_next:
+  # Code from module inet_pton:
   # Code from module netdb:
   # Code from module netinet_in:
   # Code from module snippet/arg-nonnull:
@@ -54,6 +56,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module socklen:
   # Code from module ssize_t:
   # Code from module stdalign:
+  # Code from module stdbool:
   # Code from module stddef:
   # Code from module sys_socket:
   # Code from module sys_stat:
@@ -89,12 +92,19 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_GETTIMEOFDAY
   fi
   gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
+  gl_FUNC_INET_PTON
+  if test $HAVE_INET_PTON = 0 || test $REPLACE_INET_NTOP = 1; then
+    AC_LIBOBJ([inet_pton])
+    gl_PREREQ_INET_PTON
+  fi
+  gl_ARPA_INET_MODULE_INDICATOR([inet_pton])
   gl_HEADER_NETDB
   gl_HEADER_NETINET_IN
   AC_PROG_MKDIR_P
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
+  AM_STDBOOL_H
   gl_STDDEF_H
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
   AC_PROG_MKDIR_P
@@ -251,11 +261,15 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
   lib/arpa_inet.in.h
+  lib/c-ctype.c
+  lib/c-ctype.h
   lib/errno.in.h
   lib/gettimeofday.c
+  lib/inet_pton.c
   lib/netdb.in.h
   lib/netinet_in.in.h
   lib/stdalign.in.h
+  lib/stdbool.in.h
   lib/stddef.in.h
   lib/sys_socket.c
   lib/sys_socket.in.h
@@ -273,6 +287,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/gettimeofday.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/inet_pton.m4
   m4/netdb_h.m4
   m4/netinet_in_h.m4
   m4/off_t.m4
@@ -280,6 +295,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/sockpfaf.m4
   m4/ssize_t.m4
   m4/stdalign.m4
+  m4/stdbool.m4
   m4/stddef_h.m4
   m4/sys_socket_h.m4
   m4/sys_stat_h.m4

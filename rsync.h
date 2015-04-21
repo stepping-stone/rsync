@@ -1279,10 +1279,6 @@ extern short info_levels[], debug_levels[];
 
 #define COUNT_DEBUG (DEBUG_TIME+1)
 
-#ifndef HAVE_INET_PTON
-int inet_pton(int af, const char *src, void *dst);
-#endif
-
 #ifndef HAVE_GETPASS
 char *getpass(const char *prompt);
 #endif

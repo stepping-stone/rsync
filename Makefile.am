@@ -22,7 +22,7 @@ rsync_SOURCES = \
 	fileio.c batch.c clientname.c chmod.c acls.c xattrs.c \
 	progress.c pipe.c \
 	params.c loadparm.c clientserver.c access.c connection.c authenticate.c
-rsync_LDADD = lib/libgnu.a libcompat.a
+rsync_LDADD = lib/libgnu.a libcompat.a $(INET_PTON_LIB)
 
 # Test targets
 tls_SOURCES = tls.c syscall.c lib/compat.c lib/snprintf.c lib/permstring.c lib/sysxattrs.c
