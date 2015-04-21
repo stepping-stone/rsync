@@ -39,6 +39,7 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   # Code from module absolute-header:
+  # Code from module arpa_inet:
   # Code from module errno:
   # Code from module extern-inline:
   # Code from module include_next:
@@ -70,6 +71,8 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='lib'
+  gl_HEADER_ARPA_INET
+  AC_PROG_MKDIR_P
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
   gl_HEADER_NETINET_IN
@@ -226,6 +229,7 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
+  lib/arpa_inet.in.h
   lib/errno.in.h
   lib/netinet_in.in.h
   lib/stdalign.in.h
@@ -235,6 +239,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/sys_uio.in.h
   m4/00gnulib.m4
   m4/absolute-header.m4
+  m4/arpa_inet_h.m4
   m4/errno_h.m4
   m4/extern-inline.m4
   m4/gnulib-common.m4
