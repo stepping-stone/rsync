@@ -22,7 +22,7 @@
 
 #include "rsync.h"
 #include "inums.h"
-#include "io.h"
+#include "proto_io.h"
 #if defined CONFIG_LOCALE && defined HAVE_LOCALE_H
 #include <locale.h>
 #endif
