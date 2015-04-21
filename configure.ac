@@ -499,7 +499,6 @@ dnl AC_MSG_NOTICE([Looking in libraries: $LIBS])
 
 AC_REPLACE_FUNCS([inet_ntop inet_pton])
 
-AC_HAVE_TYPE([struct addrinfo], [#include <netdb.h>])
 AC_HAVE_TYPE([struct sockaddr_storage], [#include <sys/types.h>
 #include <sys/socket.h>])
 

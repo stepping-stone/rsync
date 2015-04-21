@@ -43,6 +43,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module errno:
   # Code from module extern-inline:
   # Code from module include_next:
+  # Code from module netdb:
   # Code from module netinet_in:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
@@ -75,6 +76,7 @@ AC_DEFUN([gl_INIT],
   AC_PROG_MKDIR_P
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_HEADER_NETDB
   gl_HEADER_NETINET_IN
   AC_PROG_MKDIR_P
   gl_TYPE_SOCKLEN_T
@@ -231,6 +233,7 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/warn-on-use.h
   lib/arpa_inet.in.h
   lib/errno.in.h
+  lib/netdb.in.h
   lib/netinet_in.in.h
   lib/stdalign.in.h
   lib/sys_socket.c
@@ -244,6 +247,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/extern-inline.m4
   m4/gnulib-common.m4
   m4/include_next.m4
+  m4/netdb_h.m4
   m4/netinet_in_h.m4
   m4/off_t.m4
   m4/socklen.m4

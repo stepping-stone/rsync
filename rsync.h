@@ -980,7 +980,6 @@ typedef struct {
 #include "lib/mdigest.h"
 #include "lib/wildmatch.h"
 #include "lib/permstring.h"
-#include "lib/addrinfo.h"
 
 #ifndef __GNUC__
 #define __attribute__(x)
