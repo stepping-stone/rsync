@@ -46,6 +46,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module fd-hook:
   # Code from module float:
   # Code from module fpieee:
   AC_REQUIRE([gl_FP_IEEE])
@@ -56,11 +57,15 @@ AC_DEFUN([gl_EARLY],
   # Code from module fseeko:
   AC_REQUIRE([AC_FUNC_FSEEKO])
   # Code from module fstat:
+  # Code from module getaddrinfo:
   # Code from module getdelim:
   # Code from module getline:
   # Code from module getpass:
+  # Code from module gettext-h:
   # Code from module gettimeofday:
+  # Code from module hostent:
   # Code from module include_next:
+  # Code from module inet_ntop:
   # Code from module inet_pton:
   # Code from module isnand-nolibm:
   # Code from module isnanf-nolibm:
@@ -81,6 +86,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module printf-frexpl:
   # Code from module printf-safe:
   # Code from module realloc-posix:
+  # Code from module servent:
   # Code from module signbit:
   # Code from module size_max:
   # Code from module snippet/_Noreturn:
@@ -89,6 +95,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module snippet/warn-on-use:
   # Code from module snprintf:
   # Code from module snprintf-posix:
+  # Code from module socketlib:
+  # Code from module sockets:
   # Code from module socklen:
   # Code from module ssize_t:
   # Code from module stdalign:
@@ -169,6 +177,14 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_FSTAT
   fi
   gl_SYS_STAT_MODULE_INDICATOR([fstat])
+  gl_GETADDRINFO
+  if test $HAVE_GETADDRINFO = 0; then
+    AC_LIBOBJ([getaddrinfo])
+  fi
+  if test $HAVE_DECL_GAI_STRERROR = 0 || test $REPLACE_GAI_STRERROR = 1; then
+    AC_LIBOBJ([gai_strerror])
+  fi
+  gl_NETDB_MODULE_INDICATOR([getaddrinfo])
   gl_FUNC_GETDELIM
   if test $HAVE_GETDELIM = 0 || test $REPLACE_GETDELIM = 1; then
     AC_LIBOBJ([getdelim])
@@ -186,12 +202,21 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([getpass])
     gl_PREREQ_GETPASS
   fi
+  AC_SUBST([LIBINTL])
+  AC_SUBST([LTLIBINTL])
   gl_FUNC_GETTIMEOFDAY
   if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
     AC_LIBOBJ([gettimeofday])
     gl_PREREQ_GETTIMEOFDAY
   fi
   gl_SYS_TIME_MODULE_INDICATOR([gettimeofday])
+  gl_HOSTENT
+  gl_FUNC_INET_NTOP
+  if test $HAVE_INET_NTOP = 0 || test $REPLACE_INET_NTOP = 1; then
+    AC_LIBOBJ([inet_ntop])
+    gl_PREREQ_INET_NTOP
+  fi
+  gl_ARPA_INET_MODULE_INDICATOR([inet_ntop])
   gl_FUNC_INET_PTON
   if test $HAVE_INET_PTON = 0 || test $REPLACE_INET_NTOP = 1; then
     AC_LIBOBJ([inet_pton])
@@ -251,6 +276,7 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([realloc])
   fi
   gl_STDLIB_MODULE_INDICATOR([realloc-posix])
+  gl_SERVENT
   gl_SIGNBIT
   if test $REPLACE_SIGNBIT = 1; then
     AC_LIBOBJ([signbitf])
@@ -263,6 +289,8 @@ AC_DEFUN([gl_INIT],
   gl_STDIO_MODULE_INDICATOR([snprintf])
   gl_MODULE_INDICATOR([snprintf])
   gl_FUNC_SNPRINTF_POSIX
+  AC_REQUIRE([gl_SOCKETLIB])
+  AC_REQUIRE([gl_SOCKETS])
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
@@ -446,6 +474,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/c-ctype.c
   lib/c-ctype.h
   lib/errno.in.h
+  lib/fd-hook.c
+  lib/fd-hook.h
   lib/float+.h
   lib/float.c
   lib/float.in.h
@@ -455,11 +485,15 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/fseek.c
   lib/fseeko.c
   lib/fstat.c
+  lib/gai_strerror.c
+  lib/getaddrinfo.c
   lib/getdelim.c
   lib/getline.c
   lib/getpass.c
   lib/getpass.h
+  lib/gettext.h
   lib/gettimeofday.c
+  lib/inet_ntop.c
   lib/inet_pton.c
   lib/isnan.c
   lib/isnand-nolibm.h
@@ -495,6 +529,8 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/signbitl.c
   lib/size_max.h
   lib/snprintf.c
+  lib/sockets.c
+  lib/sockets.h
   lib/stdalign.in.h
   lib/stdbool.in.h
   lib/stddef.in.h
@@ -517,6 +553,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/vasnprintf.h
   lib/verify.h
   lib/vsnprintf.c
+  lib/w32sock.h
   lib/wchar.in.h
   lib/xsize.c
   lib/xsize.h
@@ -537,12 +574,15 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/fseek.m4
   m4/fseeko.m4
   m4/fstat.m4
+  m4/getaddrinfo.m4
   m4/getdelim.m4
   m4/getline.m4
   m4/getpass.m4
   m4/gettimeofday.m4
   m4/gnulib-common.m4
+  m4/hostent.m4
   m4/include_next.m4
+  m4/inet_ntop.m4
   m4/inet_pton.m4
   m4/intmax_t.m4
   m4/inttypes_h.m4
@@ -568,10 +608,13 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/printf-frexpl.m4
   m4/printf.m4
   m4/realloc.m4
+  m4/servent.m4
   m4/signbit.m4
   m4/size_max.m4
   m4/snprintf-posix.m4
   m4/snprintf.m4
+  m4/socketlib.m4
+  m4/sockets.m4
   m4/socklen.m4
   m4/sockpfaf.m4
   m4/ssize_t.m4

@@ -498,35 +498,6 @@ dnl AC_MSG_NOTICE([Looking in libraries: $LIBS])
 AC_HAVE_TYPE([struct sockaddr_storage], [#include <sys/types.h>
 #include <sys/socket.h>])
 
-# Irix 6.5 has getaddrinfo but not the corresponding defines, so use
-#   builtin getaddrinfo if one of the defines don't exist
-AC_CACHE_CHECK([whether defines needed by getaddrinfo exist],
-               rsync_cv_HAVE_GETADDR_DEFINES,[
-			AC_EGREP_CPP(yes, [
-			#include <sys/types.h>
-			#include <sys/socket.h>
-			#include <netdb.h>
-			#ifdef AI_PASSIVE
-			yes
-			#endif],
-			rsync_cv_HAVE_GETADDR_DEFINES=yes,
-			rsync_cv_HAVE_GETADDR_DEFINES=no)])
-AS_IF([test x"$rsync_cv_HAVE_GETADDR_DEFINES" = x"yes" -a x"$ac_cv_type_struct_addrinfo" = x"yes"],[
-	# Tru64 UNIX has getaddrinfo() but has it renamed in libc as
-	# something else so we must include <netdb.h> to get the
-	# redefinition.
-	AC_CHECK_FUNCS(getaddrinfo, ,
-		[AC_MSG_CHECKING([for getaddrinfo by including <netdb.h>])
-		AC_TRY_LINK([#include <sys/types.h>
-		#include <sys/socket.h>
-		#include <netdb.h>],[getaddrinfo(NULL, NULL, NULL, NULL);],
-			[AC_MSG_RESULT([yes])
-			AC_DEFINE(HAVE_GETADDRINFO, 1,
-				[Define to 1 if you have the "getaddrinfo" function and required types.])],
-			[AC_MSG_RESULT([no])
-			AC_LIBOBJ([getaddrinfo])])])
-    ],[AC_LIBOBJ([getaddrinfo])])
-
 AC_CHECK_MEMBER([struct sockaddr.sa_len],
 		[ AC_DEFINE(HAVE_SOCKADDR_LEN, 1, [Do we have sockaddr.sa_len?]) ],
 		[],
