@@ -45,11 +45,27 @@ AC_DEFUN([gl_EARLY],
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module fseek:
+  # Code from module fseeko:
+  AC_REQUIRE([AC_FUNC_FSEEKO])
+  # Code from module fstat:
+  # Code from module getdelim:
+  # Code from module getline:
+  # Code from module getpass:
   # Code from module gettimeofday:
   # Code from module include_next:
   # Code from module inet_pton:
+  # Code from module largefile:
+  AC_REQUIRE([AC_SYS_LARGEFILE])
+  # Code from module lseek:
+  # Code from module malloc-posix:
+  # Code from module msvc-inval:
+  # Code from module msvc-nothrow:
+  # Code from module multiarch:
   # Code from module netdb:
   # Code from module netinet_in:
+  # Code from module realloc-posix:
+  # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
@@ -58,12 +74,18 @@ AC_DEFUN([gl_EARLY],
   # Code from module stdalign:
   # Code from module stdbool:
   # Code from module stddef:
+  # Code from module stdint:
+  # Code from module stdio:
+  # Code from module stdlib:
+  # Code from module strdup-posix:
+  # Code from module string:
   # Code from module sys_socket:
   # Code from module sys_stat:
   # Code from module sys_time:
   # Code from module sys_types:
   # Code from module sys_uio:
   # Code from module time:
+  # Code from module unistd:
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -86,6 +108,40 @@ AC_DEFUN([gl_INIT],
   AC_PROG_MKDIR_P
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FUNC_FSEEK
+  if test $REPLACE_FSEEK = 1; then
+    AC_LIBOBJ([fseek])
+  fi
+  gl_STDIO_MODULE_INDICATOR([fseek])
+  gl_FUNC_FSEEKO
+  if test $HAVE_FSEEKO = 0 || test $REPLACE_FSEEKO = 1; then
+    AC_LIBOBJ([fseeko])
+    gl_PREREQ_FSEEKO
+  fi
+  gl_STDIO_MODULE_INDICATOR([fseeko])
+  gl_FUNC_FSTAT
+  if test $REPLACE_FSTAT = 1; then
+    AC_LIBOBJ([fstat])
+    gl_PREREQ_FSTAT
+  fi
+  gl_SYS_STAT_MODULE_INDICATOR([fstat])
+  gl_FUNC_GETDELIM
+  if test $HAVE_GETDELIM = 0 || test $REPLACE_GETDELIM = 1; then
+    AC_LIBOBJ([getdelim])
+    gl_PREREQ_GETDELIM
+  fi
+  gl_STDIO_MODULE_INDICATOR([getdelim])
+  gl_FUNC_GETLINE
+  if test $REPLACE_GETLINE = 1; then
+    AC_LIBOBJ([getline])
+    gl_PREREQ_GETLINE
+  fi
+  gl_STDIO_MODULE_INDICATOR([getline])
+  gl_FUNC_GETPASS
+  if test $HAVE_GETPASS = 0; then
+    AC_LIBOBJ([getpass])
+    gl_PREREQ_GETPASS
+  fi
   gl_FUNC_GETTIMEOFDAY
   if test $HAVE_GETTIMEOFDAY = 0 || test $REPLACE_GETTIMEOFDAY = 1; then
     AC_LIBOBJ([gettimeofday])
@@ -98,14 +154,49 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_INET_PTON
   fi
   gl_ARPA_INET_MODULE_INDICATOR([inet_pton])
+  AC_REQUIRE([gl_LARGEFILE])
+  gl_FUNC_LSEEK
+  if test $REPLACE_LSEEK = 1; then
+    AC_LIBOBJ([lseek])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([lseek])
+  gl_FUNC_MALLOC_POSIX
+  if test $REPLACE_MALLOC = 1; then
+    AC_LIBOBJ([malloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([malloc-posix])
+  gl_MSVC_INVAL
+  if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
+    AC_LIBOBJ([msvc-inval])
+  fi
+  gl_MSVC_NOTHROW
+  if test $HAVE_MSVC_INVALID_PARAMETER_HANDLER = 1; then
+    AC_LIBOBJ([msvc-nothrow])
+  fi
+  gl_MULTIARCH
   gl_HEADER_NETDB
   gl_HEADER_NETINET_IN
   AC_PROG_MKDIR_P
+  gl_FUNC_REALLOC_POSIX
+  if test $REPLACE_REALLOC = 1; then
+    AC_LIBOBJ([realloc])
+  fi
+  gl_STDLIB_MODULE_INDICATOR([realloc-posix])
   gl_TYPE_SOCKLEN_T
   gt_TYPE_SSIZE_T
   gl_STDALIGN_H
   AM_STDBOOL_H
   gl_STDDEF_H
+  gl_STDINT_H
+  gl_STDIO_H
+  gl_STDLIB_H
+  gl_FUNC_STRDUP_POSIX
+  if test $ac_cv_func_strdup = no || test $REPLACE_STRDUP = 1; then
+    AC_LIBOBJ([strdup])
+    gl_PREREQ_STRDUP
+  fi
+  gl_STRING_MODULE_INDICATOR([strdup])
+  gl_HEADER_STRING_H
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
   AC_PROG_MKDIR_P
   gl_HEADER_SYS_STAT_H
@@ -117,6 +208,7 @@ AC_DEFUN([gl_INIT],
   gl_HEADER_SYS_UIO
   AC_PROG_MKDIR_P
   gl_HEADER_TIME_H
+  gl_UNISTD_H
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -257,6 +349,7 @@ AC_DEFUN([gltests_LIBSOURCES], [
 # This macro records the list of files which have been installed by
 # gnulib-tool and may be removed by future gnulib-tool invocations.
 AC_DEFUN([gl_FILE_LIST], [
+  build-aux/snippet/_Noreturn.h
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
@@ -264,13 +357,33 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/c-ctype.c
   lib/c-ctype.h
   lib/errno.in.h
+  lib/fseek.c
+  lib/fseeko.c
+  lib/fstat.c
+  lib/getdelim.c
+  lib/getline.c
+  lib/getpass.c
+  lib/getpass.h
   lib/gettimeofday.c
   lib/inet_pton.c
+  lib/lseek.c
+  lib/malloc.c
+  lib/msvc-inval.c
+  lib/msvc-inval.h
+  lib/msvc-nothrow.c
+  lib/msvc-nothrow.h
   lib/netdb.in.h
   lib/netinet_in.in.h
+  lib/realloc.c
   lib/stdalign.in.h
   lib/stdbool.in.h
   lib/stddef.in.h
+  lib/stdint.in.h
+  lib/stdio-impl.h
+  lib/stdio.in.h
+  lib/stdlib.in.h
+  lib/strdup.c
+  lib/string.in.h
   lib/sys_socket.c
   lib/sys_socket.in.h
   lib/sys_stat.in.h
@@ -278,25 +391,46 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/sys_types.in.h
   lib/sys_uio.in.h
   lib/time.in.h
+  lib/unistd.c
+  lib/unistd.in.h
   m4/00gnulib.m4
   m4/absolute-header.m4
   m4/arpa_inet_h.m4
   m4/errno_h.m4
   m4/extensions.m4
   m4/extern-inline.m4
+  m4/fseek.m4
+  m4/fseeko.m4
+  m4/fstat.m4
+  m4/getdelim.m4
+  m4/getline.m4
+  m4/getpass.m4
   m4/gettimeofday.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/inet_pton.m4
+  m4/largefile.m4
+  m4/longlong.m4
+  m4/lseek.m4
+  m4/malloc.m4
+  m4/msvc-inval.m4
+  m4/msvc-nothrow.m4
+  m4/multiarch.m4
   m4/netdb_h.m4
   m4/netinet_in_h.m4
   m4/off_t.m4
+  m4/realloc.m4
   m4/socklen.m4
   m4/sockpfaf.m4
   m4/ssize_t.m4
   m4/stdalign.m4
   m4/stdbool.m4
   m4/stddef_h.m4
+  m4/stdint.m4
+  m4/stdio_h.m4
+  m4/stdlib_h.m4
+  m4/strdup.m4
+  m4/string_h.m4
   m4/sys_socket_h.m4
   m4/sys_stat_h.m4
   m4/sys_time_h.m4

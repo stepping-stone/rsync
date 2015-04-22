@@ -1279,10 +1279,6 @@ extern short info_levels[], debug_levels[];
 
 #define COUNT_DEBUG (DEBUG_TIME+1)
 
-#ifndef HAVE_GETPASS
-char *getpass(const char *prompt);
-#endif
-
 #ifdef MAINTAINER_MODE
 const char *get_panic_action(void);
 #endif
