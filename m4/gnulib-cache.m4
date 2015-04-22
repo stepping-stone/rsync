@@ -27,7 +27,7 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=. --lib=libgnu --source-base=lib --m4-base=m4 --doc-base=doc --tests-base=tests --aux-dir=. --no-conditional-dependencies --no-libtool --macro-prefix=gl --no-vc-files arpa_inet getpass inet_pton netdb netinet_in socklen sys_stat
+#   gnulib-tool --import --dir=. --lib=libgnu --source-base=lib --m4-base=m4 --doc-base=doc --tests-base=tests --aux-dir=. --no-conditional-dependencies --no-libtool --macro-prefix=gl --no-vc-files arpa_inet getpass inet_pton netdb netinet_in snprintf-posix socklen sys_stat vsnprintf-posix
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([])
@@ -37,8 +37,10 @@ gl_MODULES([
   inet_pton
   netdb
   netinet_in
+  snprintf-posix
   socklen
   sys_stat
+  vsnprintf-posix
 ])
 gl_AVOID([])
 gl_SOURCE_BASE([lib])

@@ -1013,26 +1013,6 @@ typedef struct {
 #define x_lstat(fn,fst,xst) do_lstat(fn,fst)
 #endif
 
-/* We have replacement versions of these if they're missing. */
-#ifndef HAVE_ASPRINTF
-int asprintf(char **ptr, const char *format, ...);
-#endif
-
-#ifndef HAVE_VASPRINTF
-int vasprintf(char **ptr, const char *format, va_list ap);
-#endif
-
-#if !defined HAVE_VSNPRINTF || !defined HAVE_C99_VSNPRINTF
-#define vsnprintf rsync_vsnprintf
-int vsnprintf(char *str, size_t count, const char *fmt, va_list args);
-#endif
-
-#if !defined HAVE_SNPRINTF || !defined HAVE_C99_VSNPRINTF
-#define snprintf rsync_snprintf
-int snprintf(char *str, size_t count, const char *fmt,...);
-#endif
-
-
 #ifndef HAVE_STRERROR
 extern char *sys_errlist[];
 #define strerror(i) sys_errlist[i]

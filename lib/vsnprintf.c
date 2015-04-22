@@ -1,6 +1,6 @@
 /* Formatted output to strings.
    Copyright (C) 2004, 2006-2015 Free Software Foundation, Inc.
-   Written by Simon Josefsson and Paul Eggert.
+   Written by Simon Josefsson and Yoann Vandoorselaere <yoann@prelude-ids.org>.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,7 +15,9 @@
    You should have received a copy of the GNU General Public License along
    with this program; if not, see <http://www.gnu.org/licenses/>.  */
 
-#include <config.h>
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
 /* Specification.  */
 #include <stdio.h>
@@ -28,23 +30,20 @@
 
 #include "vasnprintf.h"
 
-/* Print formatted output to string STR.  Similar to sprintf, but
+/* Print formatted output to string STR.  Similar to vsprintf, but
    additional length SIZE limit how much is written into STR.  Returns
    string length of formatted string (which may be larger than SIZE).
    STR may be NULL, in which case nothing will be written.  On error,
    return a negative value.  */
 int
-snprintf (char *str, size_t size, const char *format, ...)
+vsnprintf (char *str, size_t size, const char *format, va_list args)
 {
   char *output;
   size_t len;
   size_t lenbuf = size;
-  va_list args;
 
-  va_start (args, format);
   output = vasnprintf (str, &lenbuf, format, args);
   len = lenbuf;
-  va_end (args);
 
   if (!output)
     return -1;
@@ -61,7 +60,7 @@ snprintf (char *str, size_t size, const char *format, ...)
       free (output);
     }
 
-  if (INT_MAX < len)
+  if (len > INT_MAX)
     {
       errno = EOVERFLOW;
       return -1;
