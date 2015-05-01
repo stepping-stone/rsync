@@ -32,12 +32,16 @@
 #ifdef HAVE_NETINET_IP_H
 #include <netinet/ip.h>
 #endif
+#ifndef WIN32
 #include <netinet/tcp.h>
+#endif
 
 extern char *bind_address;
 extern char *sockopts;
 extern int default_af_hint;
+#ifndef WIN32
 extern int connect_timeout;
+#endif
 
 #ifdef HAVE_SIGACTION
 static struct sigaction sigact;
@@ -160,11 +164,13 @@ int try_bind_local(int s, int ai_family, int ai_socktype,
 	return -1;
 }
 
+#ifndef WIN32
 /* connect() timeout handler based on alarm() */
 static RETSIGTYPE contimeout_handler(UNUSED(int val))
 {
 	connect_timeout = -1;
 }
+#endif
 
 /* Open a socket to a tcp remote host with the specified port.
  *
@@ -270,6 +276,7 @@ int open_socket_out(char *host, int port, const char *bind_addr,
 			s = -1;
 			continue;
 		}
+#ifndef WIN32
 		if (connect_timeout > 0) {
 			SIGACTION(SIGALRM, contimeout_handler);
 			alarm(connect_timeout);
@@ -293,6 +300,13 @@ int open_socket_out(char *host, int port, const char *bind_addr,
 			errnos[j] = errno;
 			continue;
 		}
+#else
+		if (connect(s, res->ai_addr, res->ai_addrlen) < 0) {
+			close(s);
+			s = -1;
+			continue;
+		}
+#endif
 
 		if (proxied
 		 && establish_proxy_connection(s, host, port,
