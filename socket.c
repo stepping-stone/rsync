@@ -36,6 +36,8 @@
 #include <netinet/tcp.h>
 #endif
 
+#include <sys/select.h>
+
 extern char *bind_address;
 extern char *sockopts;
 extern int default_af_hint;

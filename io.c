@@ -27,6 +27,8 @@
  * connection, but it's switched on quite early using
  * io_start_multiplex_out() and io_start_multiplex_in(). */
 
+#include <sys/select.h>
+
 #include "rsync.h"
 #include "ifuncs.h"
 #include "inums.h"
