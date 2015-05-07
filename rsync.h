@@ -357,9 +357,7 @@ enum delret {
 #endif
 
 #include <signal.h>
-#ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
-#endif
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 #endif

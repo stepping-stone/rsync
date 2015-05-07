@@ -39,13 +39,21 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([gl_PROG_AR_RANLIB])
   # Code from module absolute-header:
+  # Code from module accept:
+  # Code from module alloca:
   # Code from module alloca-opt:
   # Code from module arpa_inet:
+  # Code from module bind:
   # Code from module c-ctype:
+  # Code from module close:
+  # Code from module connect:
+  # Code from module dup2:
   # Code from module errno:
   # Code from module extensions:
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
   # Code from module extern-inline:
+  # Code from module fcntl:
+  # Code from module fcntl-h:
   # Code from module fd-hook:
   # Code from module float:
   # Code from module fpieee:
@@ -59,8 +67,12 @@ AC_DEFUN([gl_EARLY],
   # Code from module fstat:
   # Code from module getaddrinfo:
   # Code from module getdelim:
+  # Code from module getdtablesize:
   # Code from module getline:
   # Code from module getpass:
+  # Code from module getpeername:
+  # Code from module getsockname:
+  # Code from module getsockopt:
   # Code from module gettext-h:
   # Code from module gettimeofday:
   # Code from module hostent:
@@ -72,6 +84,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module isnanl-nolibm:
   # Code from module largefile:
   AC_REQUIRE([AC_SYS_LARGEFILE])
+  # Code from module listen:
   # Code from module lseek:
   # Code from module malloc-posix:
   # Code from module math:
@@ -82,19 +95,25 @@ AC_DEFUN([gl_EARLY],
   # Code from module netdb:
   # Code from module netinet_in:
   # Code from module nocrash:
+  # Code from module pipe-posix:
   # Code from module printf-frexp:
   # Code from module printf-frexpl:
   # Code from module printf-safe:
   # Code from module realloc-posix:
+  # Code from module select:
   # Code from module servent:
+  # Code from module setsockopt:
+  # Code from module signal-h:
   # Code from module signbit:
   # Code from module size_max:
+  # Code from module sleep:
   # Code from module snippet/_Noreturn:
   # Code from module snippet/arg-nonnull:
   # Code from module snippet/c++defs:
   # Code from module snippet/warn-on-use:
   # Code from module snprintf:
   # Code from module snprintf-posix:
+  # Code from module socket:
   # Code from module socketlib:
   # Code from module sockets:
   # Code from module socklen:
@@ -107,17 +126,20 @@ AC_DEFUN([gl_EARLY],
   # Code from module stdlib:
   # Code from module strdup-posix:
   # Code from module string:
+  # Code from module sys_select:
   # Code from module sys_socket:
   # Code from module sys_stat:
   # Code from module sys_time:
   # Code from module sys_types:
   # Code from module sys_uio:
+  # Code from module sys_wait:
   # Code from module time:
   # Code from module unistd:
   # Code from module vasnprintf:
   # Code from module verify:
   # Code from module vsnprintf:
   # Code from module vsnprintf-posix:
+  # Code from module waitpid:
   # Code from module wchar:
   # Code from module xsize:
 ])
@@ -138,11 +160,43 @@ AC_DEFUN([gl_INIT],
   m4_pushdef([gl_LIBSOURCES_DIR], [])
   gl_COMMON
   gl_source_base='lib'
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([accept])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([accept])
   gl_FUNC_ALLOCA
   gl_HEADER_ARPA_INET
   AC_PROG_MKDIR_P
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([bind])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([bind])
+  gl_FUNC_CLOSE
+  if test $REPLACE_CLOSE = 1; then
+    AC_LIBOBJ([close])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([close])
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([connect])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([connect])
+  gl_FUNC_DUP2
+  if test $HAVE_DUP2 = 0 || test $REPLACE_DUP2 = 1; then
+    AC_LIBOBJ([dup2])
+    gl_PREREQ_DUP2
+  fi
+  gl_UNISTD_MODULE_INDICATOR([dup2])
   gl_HEADER_ERRNO_H
   AC_REQUIRE([gl_EXTERN_INLINE])
+  gl_FUNC_FCNTL
+  if test $HAVE_FCNTL = 0 || test $REPLACE_FCNTL = 1; then
+    AC_LIBOBJ([fcntl])
+  fi
+  gl_FCNTL_MODULE_INDICATOR([fcntl])
+  gl_FCNTL_H
   gl_FLOAT_H
   if test $REPLACE_FLOAT_LDBL = 1; then
     AC_LIBOBJ([float])
@@ -191,6 +245,12 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_GETDELIM
   fi
   gl_STDIO_MODULE_INDICATOR([getdelim])
+  gl_FUNC_GETDTABLESIZE
+  if test $HAVE_GETDTABLESIZE = 0 || test $REPLACE_GETDTABLESIZE = 1; then
+    AC_LIBOBJ([getdtablesize])
+    gl_PREREQ_GETDTABLESIZE
+  fi
+  gl_UNISTD_MODULE_INDICATOR([getdtablesize])
   gl_FUNC_GETLINE
   if test $REPLACE_GETLINE = 1; then
     AC_LIBOBJ([getline])
@@ -202,6 +262,21 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([getpass])
     gl_PREREQ_GETPASS
   fi
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([getpeername])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([getpeername])
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([getsockname])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([getsockname])
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([getsockopt])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([getsockopt])
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
   gl_FUNC_GETTIMEOFDAY
@@ -239,6 +314,11 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_ISNANL
   fi
   AC_REQUIRE([gl_LARGEFILE])
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([listen])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([listen])
   gl_FUNC_LSEEK
   if test $REPLACE_LSEEK = 1; then
     AC_LIBOBJ([lseek])
@@ -268,6 +348,11 @@ AC_DEFUN([gl_INIT],
   gl_HEADER_NETDB
   gl_HEADER_NETINET_IN
   AC_PROG_MKDIR_P
+  gl_FUNC_PIPE
+  if test $HAVE_PIPE = 0; then
+    AC_LIBOBJ([pipe])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([pipe])
   gl_FUNC_PRINTF_FREXP
   gl_FUNC_PRINTF_FREXPL
   m4_divert_text([INIT_PREPARE], [gl_printf_safe=yes])
@@ -276,7 +361,18 @@ AC_DEFUN([gl_INIT],
     AC_LIBOBJ([realloc])
   fi
   gl_STDLIB_MODULE_INDICATOR([realloc-posix])
+  gl_FUNC_SELECT
+  if test $REPLACE_SELECT = 1; then
+    AC_LIBOBJ([select])
+  fi
+  gl_SYS_SELECT_MODULE_INDICATOR([select])
   gl_SERVENT
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([setsockopt])
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([setsockopt])
+  gl_SIGNAL_H
   gl_SIGNBIT
   if test $REPLACE_SIGNBIT = 1; then
     AC_LIBOBJ([signbitf])
@@ -285,10 +381,29 @@ AC_DEFUN([gl_INIT],
   fi
   gl_MATH_MODULE_INDICATOR([signbit])
   gl_SIZE_MAX
+  gl_FUNC_SLEEP
+  if test $HAVE_SLEEP = 0 || test $REPLACE_SLEEP = 1; then
+    AC_LIBOBJ([sleep])
+  fi
+  gl_UNISTD_MODULE_INDICATOR([sleep])
   gl_FUNC_SNPRINTF
   gl_STDIO_MODULE_INDICATOR([snprintf])
   gl_MODULE_INDICATOR([snprintf])
   gl_FUNC_SNPRINTF_POSIX
+  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    AC_LIBOBJ([socket])
+  fi
+  # When this module is used, sockets may actually occur as file descriptors,
+  # hence it is worth warning if the modules 'close' and 'ioctl' are not used.
+  m4_ifdef([gl_UNISTD_H_DEFAULTS], [AC_REQUIRE([gl_UNISTD_H_DEFAULTS])])
+  m4_ifdef([gl_SYS_IOCTL_H_DEFAULTS], [AC_REQUIRE([gl_SYS_IOCTL_H_DEFAULTS])])
+  AC_REQUIRE([gl_PREREQ_SYS_H_WINSOCK2])
+  if test "$ac_cv_header_winsock2_h" = yes; then
+    UNISTD_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS=1
+    SYS_IOCTL_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS=1
+  fi
+  gl_SYS_SOCKET_MODULE_INDICATOR([socket])
   AC_REQUIRE([gl_SOCKETLIB])
   AC_REQUIRE([gl_SOCKETS])
   gl_TYPE_SOCKLEN_T
@@ -306,6 +421,8 @@ AC_DEFUN([gl_INIT],
   fi
   gl_STRING_MODULE_INDICATOR([strdup])
   gl_HEADER_STRING_H
+  gl_HEADER_SYS_SELECT
+  AC_PROG_MKDIR_P
   AC_REQUIRE([gl_HEADER_SYS_SOCKET])
   AC_PROG_MKDIR_P
   gl_HEADER_SYS_STAT_H
@@ -316,12 +433,19 @@ AC_DEFUN([gl_INIT],
   AC_PROG_MKDIR_P
   gl_HEADER_SYS_UIO
   AC_PROG_MKDIR_P
+  gl_SYS_WAIT_H
+  AC_PROG_MKDIR_P
   gl_HEADER_TIME_H
   gl_UNISTD_H
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])
   gl_FUNC_VSNPRINTF_POSIX
+  gl_FUNC_WAITPID
+  if test $HAVE_WAITPID = 0; then
+    AC_LIBOBJ([waitpid])
+  fi
+  gl_SYS_WAIT_MODULE_INDICATOR([waitpid])
   gl_WCHAR_H
   gl_XSIZE
   # End of code from modules
@@ -468,12 +592,20 @@ AC_DEFUN([gl_FILE_LIST], [
   build-aux/snippet/arg-nonnull.h
   build-aux/snippet/c++defs.h
   build-aux/snippet/warn-on-use.h
+  lib/accept.c
+  lib/alloca.c
   lib/alloca.in.h
   lib/arpa_inet.in.h
   lib/asnprintf.c
+  lib/bind.c
   lib/c-ctype.c
   lib/c-ctype.h
+  lib/close.c
+  lib/connect.c
+  lib/dup2.c
   lib/errno.in.h
+  lib/fcntl.c
+  lib/fcntl.in.h
   lib/fd-hook.c
   lib/fd-hook.h
   lib/float+.h
@@ -488,9 +620,13 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/gai_strerror.c
   lib/getaddrinfo.c
   lib/getdelim.c
+  lib/getdtablesize.c
   lib/getline.c
   lib/getpass.c
   lib/getpass.h
+  lib/getpeername.c
+  lib/getsockname.c
+  lib/getsockopt.c
   lib/gettext.h
   lib/gettimeofday.c
   lib/inet_ntop.c
@@ -503,6 +639,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/isnanl-nolibm.h
   lib/isnanl.c
   lib/itold.c
+  lib/listen.c
   lib/lseek.c
   lib/malloc.c
   lib/math.c
@@ -515,6 +652,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/msvc-nothrow.h
   lib/netdb.in.h
   lib/netinet_in.in.h
+  lib/pipe.c
   lib/printf-args.c
   lib/printf-args.h
   lib/printf-frexp.c
@@ -524,11 +662,16 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/printf-parse.c
   lib/printf-parse.h
   lib/realloc.c
+  lib/select.c
+  lib/setsockopt.c
+  lib/signal.in.h
   lib/signbitd.c
   lib/signbitf.c
   lib/signbitl.c
   lib/size_max.h
+  lib/sleep.c
   lib/snprintf.c
+  lib/socket.c
   lib/sockets.c
   lib/sockets.h
   lib/stdalign.in.h
@@ -540,12 +683,14 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/stdlib.in.h
   lib/strdup.c
   lib/string.in.h
+  lib/sys_select.in.h
   lib/sys_socket.c
   lib/sys_socket.in.h
   lib/sys_stat.in.h
   lib/sys_time.in.h
   lib/sys_types.in.h
   lib/sys_uio.in.h
+  lib/sys_wait.in.h
   lib/time.in.h
   lib/unistd.c
   lib/unistd.in.h
@@ -554,6 +699,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/verify.h
   lib/vsnprintf.c
   lib/w32sock.h
+  lib/waitpid.c
   lib/wchar.in.h
   lib/xsize.c
   lib/xsize.h
@@ -561,12 +707,17 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/absolute-header.m4
   m4/alloca.m4
   m4/arpa_inet_h.m4
+  m4/close.m4
+  m4/dup2.m4
   m4/errno_h.m4
   m4/exponentd.m4
   m4/exponentf.m4
   m4/exponentl.m4
   m4/extensions.m4
   m4/extern-inline.m4
+  m4/fcntl-o.m4
+  m4/fcntl.m4
+  m4/fcntl_h.m4
   m4/float_h.m4
   m4/fpieee.m4
   m4/frexp.m4
@@ -576,6 +727,7 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/fstat.m4
   m4/getaddrinfo.m4
   m4/getdelim.m4
+  m4/getdtablesize.m4
   m4/getline.m4
   m4/getpass.m4
   m4/gettimeofday.m4
@@ -604,13 +756,17 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/netinet_in_h.m4
   m4/nocrash.m4
   m4/off_t.m4
+  m4/pipe.m4
   m4/printf-frexp.m4
   m4/printf-frexpl.m4
   m4/printf.m4
   m4/realloc.m4
+  m4/select.m4
   m4/servent.m4
+  m4/signal_h.m4
   m4/signbit.m4
   m4/size_max.m4
+  m4/sleep.m4
   m4/snprintf-posix.m4
   m4/snprintf.m4
   m4/socketlib.m4
@@ -627,16 +783,19 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/stdlib_h.m4
   m4/strdup.m4
   m4/string_h.m4
+  m4/sys_select_h.m4
   m4/sys_socket_h.m4
   m4/sys_stat_h.m4
   m4/sys_time_h.m4
   m4/sys_types_h.m4
   m4/sys_uio_h.m4
+  m4/sys_wait_h.m4
   m4/time_h.m4
   m4/unistd_h.m4
   m4/vasnprintf.m4
   m4/vsnprintf-posix.m4
   m4/vsnprintf.m4
+  m4/waitpid.m4
   m4/warn-on-use.m4
   m4/wchar_h.m4
   m4/wchar_t.m4
