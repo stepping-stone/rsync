@@ -974,6 +974,10 @@ typedef struct {
 	char fname[1]; /* has variable size */
 } relnamecache;
 
+#ifdef WIN32
+#include "mingw.h"
+#endif
+
 #include "byteorder.h"
 #include "lib/mdigest.h"
 #include "lib/wildmatch.h"
@@ -1261,4 +1265,12 @@ extern short info_levels[], debug_levels[];
 
 #ifdef MAINTAINER_MODE
 const char *get_panic_action(void);
+#endif
+
+#ifdef WIN32
+#define rename(...) __rename(__VA_ARGS__)
+#define fopen(...) __fopen(__VA_ARGS__)
+#define opendir(...) __opendir(__VA_ARGS__)
+#define readdir(...) __readdir(__VA_ARGS__)
+#define closedir(...) __closedir(__VA_ARGS__)
 #endif
