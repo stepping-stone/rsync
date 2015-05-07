@@ -46,6 +46,7 @@ extern struct chmod_mode_struct *chmod_modes;
  * Solaris.
  **/
 pid_t piped_child(char **command, int *f_in, int *f_out)
+#ifndef WIN32
 {
 	pid_t pid;
 	int to_child_pipe[2];
@@ -95,6 +96,90 @@ pid_t piped_child(char **command, int *f_in, int *f_out)
 
 	return pid;
 }
+#else
+{
+	SECURITY_ATTRIBUTES saAttr;
+	HANDLE hChildStdinRd = 0;
+	HANDLE hChildStdinWr = 0;
+	HANDLE hChildStdoutRd = 0;
+	HANDLE hChildStdoutWr = 0;
+	BOOL bFuncRetn;
+	char buf[1024];
+	char** args;
+
+	if (DEBUG_GTE(CMD, 1))
+		print_child_argv("opening connection using:", command);
+
+	saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+	saAttr.bInheritHandle = TRUE;
+	saAttr.lpSecurityDescriptor = NULL;
+
+	if (! CreatePipe(&hChildStdoutRd, &hChildStdoutWr, &saAttr, 65536))
+	{
+		rsyserr(FERROR, errno, "pipe");
+		exit_cleanup(RERR_IPC);
+	}
+	SetHandleInformation( hChildStdoutRd, HANDLE_FLAG_INHERIT, 0);
+
+	if (! CreatePipe(&hChildStdinRd, &hChildStdinWr, &saAttr, 65536))
+	{
+		rsyserr(FERROR, errno, "pipe");
+		exit_cleanup(RERR_IPC);
+	}
+	SetHandleInformation( hChildStdinWr, HANDLE_FLAG_INHERIT, 0);
+
+	memset(buf, 0, sizeof(buf)/sizeof(char));
+	args=command;
+	while (*args)
+	{
+		if (strlen(buf) + strlen(*args) + 3 < sizeof(buf)/sizeof(char))
+		{
+			strcat(buf, "\"");
+			strcat(buf, *args);
+			strcat(buf, "\" ");
+		}
+		args++;
+	}
+
+	PROCESS_INFORMATION piProcInfo;
+	STARTUPINFO siStartInfo;
+	ZeroMemory( &piProcInfo, sizeof(PROCESS_INFORMATION) );
+	ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
+	siStartInfo.cb = sizeof(STARTUPINFO);
+	siStartInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+	siStartInfo.hStdOutput = hChildStdoutWr;
+	siStartInfo.hStdInput = hChildStdinRd;
+	siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+	 bFuncRetn = CreateProcess(NULL,
+			buf,     // command line
+			NULL,          // process security attributes
+			NULL,          // primary thread security attributes
+			TRUE,          // handles are inherited
+			0,             // creation flags
+			NULL,          // use parent's environment
+			NULL,          // use parent's current directory
+			&siStartInfo,  // STARTUPINFO pointer
+			&piProcInfo);  // receives PROCESS_INFORMATION
+
+	SetHandleInformation( hChildStdinWr, HANDLE_FLAG_INHERIT, 1);
+	SetHandleInformation( hChildStdoutRd, HANDLE_FLAG_INHERIT, 1);
+
+	SetHandleInformation( hChildStdinRd, HANDLE_FLAG_INHERIT, 0);
+	SetHandleInformation( hChildStdoutWr, HANDLE_FLAG_INHERIT, 0);
+
+	if (!CloseHandle(hChildStdoutWr) || !CloseHandle(hChildStdinRd))
+	{
+		rsyserr(FERROR, errno, "Failed to close");
+		exit_cleanup(RERR_IPC);
+	}
+
+	*f_in = _open_osfhandle((intptr_t) hChildStdoutRd, O_RDONLY);
+	*f_out = _open_osfhandle((intptr_t) hChildStdinWr, 0);
+
+	return (pid_t) piProcInfo.hProcess;
+}
+#endif
 
 /* This function forks a child which calls child_main().  First,
  * however, it has to establish communication paths to and from the
