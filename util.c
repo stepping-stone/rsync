@@ -152,7 +152,11 @@ int set_modtime(const char *fname, time_t modtime, uint32 mod_nsec, mode_t mode)
 		switch_step++;
 		if (preserve_times & PRESERVE_LINK_TIMES) {
 			preserve_times &= ~PRESERVE_LINK_TIMES;
+#ifndef __MINGW32__
 			if (S_ISLNK(mode))
+#else
+			if (S_ISLNK(mode) || S_ISDIR(mode))
+#endif
 				return 1;
 		}
 		/* FALLTHROUGH */
