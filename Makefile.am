@@ -28,6 +28,7 @@ endif
 rsync_LDADD = lib/libgnu.a libcompat.a $(INET_PTON_LIB) \
 	$(GETADDRINFO_LIB) $(HOSTENT_LIB) $(INET_NTOP_LIB) \
 	$(LIBSOCKET) $(LIB_SELECT) $(LIBINTL) $(SERVENT_LIB)
+flist.$(OBJEXT): rounding.h
 
 # Test targets
 tls_SOURCES = tls.c syscall.c lib/compat.c lib/snprintf.c lib/permstring.c lib/sysxattrs.c

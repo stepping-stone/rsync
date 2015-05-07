@@ -2756,6 +2756,7 @@ uninstall-man: uninstall-man1 uninstall-man5
 	uninstall-binSCRIPTS uninstall-man uninstall-man1 \
 	uninstall-man5
 
+flist.$(OBJEXT): rounding.h
 
 $(bin_SCRIPTS): Makefile
 	rm -f $@ $@.tmp
