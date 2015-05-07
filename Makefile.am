@@ -22,6 +22,9 @@ rsync_SOURCES = \
 	fileio.c batch.c clientname.c chmod.c acls.c xattrs.c \
 	progress.c pipe.c \
 	params.c loadparm.c clientserver.c access.c connection.c authenticate.c
+if MINGW32
+rsync_SOURCES += mingw.c fork.c
+endif
 rsync_LDADD = lib/libgnu.a libcompat.a $(INET_PTON_LIB) \
 	$(GETADDRINFO_LIB) $(HOSTENT_LIB) $(INET_NTOP_LIB) \
 	$(LIBSOCKET) $(LIB_SELECT) $(LIBINTL) $(SERVENT_LIB)
